@@ -1,0 +1,11 @@
+name = "raz-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# R2 存储桶绑定
+[[r2_buckets]]
+binding = "RAZ_BUCKET"
+bucket_name = "raz-files"
+
+[vars]
+CORS_ORIGIN = "*"
