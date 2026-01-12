@@ -33,6 +33,8 @@ function ReaderPage() {
 
     const [book, setBook] = useState<Book | null>(null);
     const [isCompleted, setIsCompleted] = useState(false);
+    const [viewMode, setViewMode] = useState<'auto' | 'single' | 'double'>('auto');
+    const [isTwoPageMode, setIsTwoPageMode] = useState(false);
 
     // 阅读时间跟踪
     const lastSaveTime = useRef<number>(Date.now());
@@ -51,23 +53,64 @@ function ReaderPage() {
         return () => window.removeEventListener('resize', updateSize);
     }, []);
 
+    const [originalPageDimensions, setOriginalPageDimensions] = useState<{ width: number; height: number } | null>(null);
+
     const onPageLoadSuccess = useCallback(({ originalWidth, originalHeight }: { originalWidth: number; originalHeight: number }) => {
-        if (!containerSize.width || !containerSize.height) return;
-        const padding = 8;
-        const availableWidth = containerSize.width - padding;
-        const availableHeight = containerSize.height - padding;
-        const scaleW = availableWidth / originalWidth;
-        const scaleH = availableHeight / originalHeight;
-        if (scaleW < scaleH) {
-            setPageDimension({ width: availableWidth });
-        } else {
-            setPageDimension({ height: availableHeight });
-        }
-    }, [containerSize]);
+        setOriginalPageDimensions({ width: originalWidth, height: originalHeight });
+    }, []);
 
     useEffect(() => {
-        setPageDimension({});
-    }, [containerSize, pageNumber]);
+        if (!containerSize.width || !containerSize.height || !originalPageDimensions) return;
+
+        const { width: originalWidth, height: originalHeight } = originalPageDimensions;
+        const padding = 20;
+        const availableWidth = containerSize.width - padding;
+        const availableHeight = containerSize.height - padding;
+
+        // 计算单页适配时的缩放
+        const singleScale = Math.min(
+            availableWidth / originalWidth,
+            availableHeight / originalHeight
+        );
+
+        // 计算双页适配时的缩放
+        // 双页模式下，两页并排，总宽度是 2 * originalWidth
+        const twoPageWidth = originalWidth * 2;
+        const twoPageScale = Math.min(
+            availableWidth / twoPageWidth,
+            availableHeight / originalHeight
+        );
+
+        // 决策逻辑极大简化：只要容器宽高比超过 1.1 (稍微宽一点) 且宽度足够，就默认尝试双页
+        const containerRatio = availableWidth / availableHeight;
+
+        let finalIsTwoPage = false;
+        if (viewMode === 'double') {
+            finalIsTwoPage = true;
+        } else if (viewMode === 'single') {
+            finalIsTwoPage = false;
+        } else {
+            // Auto Mode
+            finalIsTwoPage = containerRatio > 1.1 && availableWidth > 700;
+        }
+
+        setIsTwoPageMode(finalIsTwoPage);
+
+        // 获取当前使用的缩放比例来设置尺寸
+        const currentScale = finalIsTwoPage ? twoPageScale : singleScale;
+
+        if (finalIsTwoPage) {
+            setPageDimension({
+                width: Math.floor(originalWidth * currentScale) - 2,
+                height: Math.min(availableHeight, Math.floor(originalHeight * currentScale))
+            });
+        } else {
+            setPageDimension({
+                width: Math.floor(originalWidth * currentScale),
+                height: Math.floor(originalHeight * currentScale)
+            });
+        }
+    }, [containerSize, originalPageDimensions, viewMode]);
 
     useEffect(() => {
         if (!level || !bookId) return;
@@ -178,8 +221,163 @@ function ReaderPage() {
         setPdfLoading(false);
     }, []);
 
-    const goToPrevPage = () => setPageNumber(p => Math.max(1, p - 1));
-    const goToNextPage = () => setPageNumber(p => Math.min(numPages, p + 1));
+    // 翻页逻辑修正
+    const goToPrevPage = () => {
+        setPageNumber(p => {
+            if (p <= 1) return 1;
+            if (isTwoPageMode) {
+                // 如果当前是偶数页(2,4...)，说明是左页，退回上一组
+                // 如果是奇数页(3,5...)，说明是右页，退回该组左页？不对，UI上应该只有"上一屏"
+                // 逻辑：
+                // P2(2+3) -> Prev -> P1
+                // P4(4+5) -> Prev -> P2(2+3)
+                // P3(invalid state in spread) -> Prev -> P2?
+
+                // 如果当前在封面(1)，无法前退
+                if (p === 1) return 1;
+                // 如果在 P2或P3，退到 P1
+                if (p <= 3) return 1;
+
+                // 其他情况，退 2 页
+                // 确保对齐到偶数页
+                const target = p % 2 === 0 ? p - 2 : p - 1 - 2;
+                return Math.max(1, target);
+            }
+            return Math.max(1, p - 1);
+        });
+    };
+
+    const goToNextPage = () => {
+        setPageNumber(p => {
+            if (p >= numPages) return numPages;
+            if (isTwoPageMode) {
+                // P1 -> Next -> P2(2+3)
+                if (p === 1) return 2;
+
+                // P2(2+3) -> Next -> P4(4+5)
+                // 确保前进到下一个偶数页
+                const target = p % 2 !== 0 ? p + 1 : p + 2;
+                return Math.min(numPages, target);
+            }
+            return Math.min(numPages, p + 1);
+        });
+    };
+
+    // 渲染辅助
+    const renderPdfContent = () => {
+        if (!pdfUrl) return null;
+
+        // 计算要显示的页码
+        // 单页模式：只显示 pageNumber
+        // 双页模式：
+        //   P1: 显示 P1 (居中)
+        //   P > 1: 
+        //     如果 pageNumber 是偶数 (2, 4...) -> 显示 P(左) + P+1(右)
+        //     如果 pageNumber 是奇数 (3, 5...) -> 自动视为 P-1 的右页 -> 显示 P-1(左) + P(右)
+
+        let leftPage = pageNumber;
+        let rightPage: number | null = null;
+        let isSpread = false;
+
+        if (isTwoPageMode && pageNumber > 1) {
+            isSpread = true;
+            if (pageNumber % 2 !== 0) {
+                // 奇数页，校正为左边的偶数页
+                leftPage = pageNumber - 1;
+            }
+            // 只有当左页不是最后一页时，才显示右页
+            if (leftPage < numPages) {
+                rightPage = leftPage + 1;
+            }
+        }
+
+        return (
+            <Document
+                file={pdfUrl}
+                onLoadSuccess={onDocumentLoadSuccess}
+                onLoadError={onDocumentLoadError}
+                loading={null}
+                className="pdf-document"
+            >
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '0px', // 书籍通常没有缝隙，或者很小
+                    boxShadow: isSpread ? '0 10px 30px rgba(0,0,0,0.5)' : 'none',
+                    transition: 'all 0.3s ease'
+                }}>
+                    {/* 左页 (或单页) */}
+                    <div style={{ position: 'relative' }}>
+                        <Page
+                            key={`page-${leftPage}-${containerSize.width}`}
+                            pageNumber={leftPage}
+                            renderTextLayer={false}
+                            renderAnnotationLayer={false}
+                            onLoadSuccess={onPageLoadSuccess} // 只用左页触发 sizing 逻辑
+                            width={pageDimension.width}
+                            height={pageDimension.height}
+                            loading={
+                                <div style={{
+                                    width: pageDimension.width || 300,
+                                    height: pageDimension.height || 400,
+                                    background: 'rgba(255,255,255,0.05)'
+                                }} />
+                            }
+                            className={isSpread ? "pdf-page-left" : "pdf-page-single"}
+                        />
+                        {/* 阴影效果: 书脊 */}
+                        {isSpread && (
+                            <div style={{
+                                position: 'absolute',
+                                top: 0,
+                                right: 0,
+                                bottom: 0,
+                                width: '30px',
+                                background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.15))',
+                                pointerEvents: 'none',
+                                zIndex: 10
+                            }} />
+                        )}
+                    </div>
+
+                    {/* 右页 */}
+                    {isSpread && rightPage && (
+                        <div style={{ position: 'relative' }}>
+                            <Page
+                                key={`page-${rightPage}-${containerSize.width}`}
+                                pageNumber={rightPage}
+                                renderTextLayer={false}
+                                renderAnnotationLayer={false}
+                                // 右页不需要触发 sizing，跟随左页即可
+                                width={pageDimension.width}
+                                height={pageDimension.height}
+                                loading={
+                                    <div style={{
+                                        width: pageDimension.width || 300,
+                                        height: pageDimension.height || 400,
+                                        background: 'rgba(255,255,255,0.05)'
+                                    }} />
+                                }
+                                className="pdf-page-right"
+                            />
+                            {/* 阴影效果: 书脊 */}
+                            <div style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                bottom: 0,
+                                width: '30px',
+                                background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.15))',
+                                pointerEvents: 'none',
+                                zIndex: 10
+                            }} />
+                        </div>
+                    )}
+                </div>
+            </Document>
+        );
+    };
 
     const togglePlay = () => {
         if (!audioRef.current) return;
@@ -287,6 +485,9 @@ function ReaderPage() {
                     const rect = e.currentTarget.getBoundingClientRect();
                     const x = e.clientX - rect.left;
                     const halfWidth = rect.width / 2;
+
+                    // 双页模式下，可能需要更精确的点击区域判断？
+                    // 暂时保持简单：左半边 Prev，右半边 Next
                     if (x < halfWidth) {
                         goToPrevPage();
                     } else {
@@ -300,25 +501,8 @@ function ReaderPage() {
                     </div>
                 )}
                 {pdfError && <div className="error-message">{pdfError}</div>}
-                {pdfUrl && (
-                    <Document
-                        file={pdfUrl}
-                        onLoadSuccess={onDocumentLoadSuccess}
-                        onLoadError={onDocumentLoadError}
-                        loading={null}
-                    >
-                        <Page
-                            key={`${pageNumber}-${containerSize.width}`}
-                            pageNumber={pageNumber}
-                            renderTextLayer={false}
-                            renderAnnotationLayer={false}
-                            onLoadSuccess={onPageLoadSuccess}
-                            width={pageDimension.width}
-                            height={pageDimension.height || (pageDimension.width ? undefined : (containerSize.height ? containerSize.height - 8 : 600))}
-                            loading={null}
-                        />
-                    </Document>
-                )}
+
+                {renderPdfContent()}
             </div>
 
             {/* 美化版控制栏 */}
@@ -599,6 +783,27 @@ function ReaderPage() {
                             </div>
                         )}
                     </div>
+
+                    {/* 页面模式切换 */}
+                    <button
+                        onClick={() => setViewMode(prev => prev === 'double' ? 'single' : 'double')}
+                        style={{
+                            background: viewMode !== 'auto' ? 'rgba(99, 102, 241, 0.3)' : 'rgba(255,255,255,0.08)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            color: 'white',
+                            padding: '5px 10px',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                            fontWeight: 500,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        {isTwoPageMode ? '📖 双页' : '📄 单页'}
+                    </button>
 
                     {/* 标记完成按钮 */}
                     <button
