@@ -403,12 +403,14 @@ function ReaderPage() {
 
     const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (!audioRef.current || !duration) return;
-        const rect = e.currentTarget.getBoundingClientRect();
-        // 进度条区域有 12px 左右 padding，需要减去
-        const padding = 12;
-        const x = e.clientX - rect.left - padding;
-        const trackWidth = rect.width - (padding * 2);
-        const percentage = Math.max(0, Math.min(1, x / trackWidth));
+
+        // 获取内部轨道元素的位置
+        const trackElement = e.currentTarget.querySelector('div') as HTMLDivElement;
+        if (!trackElement) return;
+
+        const rect = trackElement.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const percentage = Math.max(0, Math.min(1, x / rect.width));
         audioRef.current.currentTime = percentage * duration;
     };
 
