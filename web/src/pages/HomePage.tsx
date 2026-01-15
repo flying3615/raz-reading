@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { type Level } from '../types';
 import { useProgress } from '../contexts/ProgressContext';
 
-// 预定义的级别数据（静态化，避免首页 API 调用）
+// Predefined level data (static to avoid API calls on homepage)
 const LEVELS: Level[] = [
     { id: 'AA', name: 'AA', bookCount: 100 },
     { id: 'A', name: 'A', bookCount: 99 },
@@ -37,19 +37,19 @@ const LEVELS: Level[] = [
 ];
 
 function formatTime(seconds: number): string {
-    if (seconds < 60) return `${seconds}秒`;
+    if (seconds < 60) return `${seconds}s`;
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}分钟`;
+    if (minutes < 60) return `${minutes}m`;
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
-    return `${hours}小时${remainingMinutes > 0 ? `${remainingMinutes}分` : ''}`;
+    return `${hours}h${remainingMinutes > 0 ? ` ${remainingMinutes}m` : ''}`;
 }
 
 function HomePage() {
     const [levels] = useState<Level[]>(LEVELS);
     const { progress, getRecentBooks, getLevelStats } = useProgress();
 
-    // 计算总书数
+    // Calculate total books
     const totalBooks = levels.reduce((sum, l) => sum + l.bookCount, 0);
     const completedBooks = Object.values(progress.books).filter(b => b.status === 'completed').length;
     const recentBooks = getRecentBooks(3);
@@ -57,40 +57,40 @@ function HomePage() {
     return (
         <div>
             <section className="hero">
-                <h1 className="hero-title">RAZ 分级阅读</h1>
+                <h1 className="hero-title">RAZ Leveled Reading</h1>
                 <p className="hero-subtitle">
-                    探索从 AA 到 Z2 的英语分级阅读材料，边看边听，提升英语阅读能力
+                    Explore leveled reading materials from AA to Z2, read and listen to improve your English reading skills
                 </p>
                 <div className="hero-stats">
                     <div className="stat-item">
                         <div className="stat-value">{levels.length}</div>
-                        <div className="stat-label">阅读级别</div>
+                        <div className="stat-label">Reading Levels</div>
                     </div>
                     <div className="stat-item">
                         <div className="stat-value">{totalBooks}</div>
-                        <div className="stat-label">绘本数量</div>
+                        <div className="stat-label">Books</div>
                     </div>
                     {progress.totalReadingTime > 0 ? (
                         <div className="stat-item">
                             <div className="stat-value">{formatTime(progress.totalReadingTime)}</div>
-                            <div className="stat-label">已阅读</div>
+                            <div className="stat-label">Time Read</div>
                         </div>
                     ) : (
                         <div className="stat-item">
                             <div className="stat-value">20GB+</div>
-                            <div className="stat-label">音频资源</div>
+                            <div className="stat-label">Audio Resources</div>
                         </div>
                     )}
                     {completedBooks > 0 && (
                         <div className="stat-item">
                             <div className="stat-value" style={{ color: '#10b981' }}>{completedBooks}</div>
-                            <div className="stat-label">已完成</div>
+                            <div className="stat-label">Completed</div>
                         </div>
                     )}
                 </div>
             </section>
 
-            {/* 继续阅读 */}
+            {/* Continue Reading */}
             {recentBooks.length > 0 && (
                 <section style={{ marginBottom: '2rem' }}>
                     <h2 style={{
@@ -100,13 +100,13 @@ function HomePage() {
                         alignItems: 'center',
                         justifyContent: 'space-between'
                     }}>
-                        <span>📖 继续阅读</span>
+                        <span>📖 Continue Reading</span>
                         <Link to="/stats" style={{
                             fontSize: '0.9rem',
                             color: 'var(--primary)',
                             textDecoration: 'none'
                         }}>
-                            查看统计 →
+                            View Stats →
                         </Link>
                     </h2>
                     <div style={{
@@ -150,10 +150,10 @@ function HomePage() {
                                 }}>
                                     <span>Level {book.level}</span>
                                     {book.totalPages > 0 && (
-                                        <span>{book.currentPage}/{book.totalPages}页</span>
+                                        <span>{book.currentPage}/{book.totalPages} pages</span>
                                     )}
                                 </div>
-                                {/* 进度条 */}
+                                {/* Progress bar */}
                                 {book.status === 'reading' && book.totalPages > 0 && (
                                     <div style={{
                                         height: '3px',
@@ -174,7 +174,7 @@ function HomePage() {
                 </section>
             )}
 
-            <h2 style={{ marginBottom: '1.5rem', fontSize: '1.5rem' }}>选择级别</h2>
+            <h2 style={{ marginBottom: '1.5rem', fontSize: '1.5rem' }}>Select Level</h2>
 
             <div className="levels-grid">
                 {levels.map((level) => {
@@ -203,12 +203,12 @@ function HomePage() {
                                                 /{level.bookCount}
                                             </span>
                                         ) : (
-                                            `${level.bookCount} 本`
+                                            `${level.bookCount} books`
                                         )}
                                     </div>
                                 )}
                             </div>
-                            {/* 完成等级标记 */}
+                            {/* Level complete marker */}
                             {stats.completed === level.bookCount && level.bookCount > 0 && (
                                 <div style={{
                                     position: 'absolute',
@@ -229,3 +229,4 @@ function HomePage() {
 }
 
 export default HomePage;
+

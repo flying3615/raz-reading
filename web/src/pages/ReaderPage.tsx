@@ -221,25 +221,25 @@ function ReaderPage() {
         setPdfLoading(false);
     }, []);
 
-    // 翻页逻辑修正
+    // Page navigation logic
     const goToPrevPage = () => {
         setPageNumber(p => {
             if (p <= 1) return 1;
             if (isTwoPageMode) {
-                // 如果当前是偶数页(2,4...)，说明是左页，退回上一组
-                // 如果是奇数页(3,5...)，说明是右页，退回该组左页？不对，UI上应该只有"上一屏"
-                // 逻辑：
+                // If current is even page (2,4...), it's the left page, go back to previous group
+                // If odd page (3,5...), it's the right page, go back to the group's left page? No, UI should just show "previous screen"
+                // Logic:
                 // P2(2+3) -> Prev -> P1
                 // P4(4+5) -> Prev -> P2(2+3)
                 // P3(invalid state in spread) -> Prev -> P2?
 
-                // 如果当前在封面(1)，无法前退
+                // If currently on cover page (1), can't go back
                 if (p === 1) return 1;
-                // 如果在 P2或P3，退到 P1
+                // If on P2 or P3, go back to P1
                 if (p <= 3) return 1;
 
-                // 其他情况，退 2 页
-                // 确保对齐到偶数页
+                // Otherwise, go back 2 pages
+                // Ensure alignment to even page
                 const target = p % 2 === 0 ? p - 2 : p - 1 - 2;
                 return Math.max(1, target);
             }
@@ -404,7 +404,7 @@ function ReaderPage() {
     const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (!audioRef.current || !duration) return;
 
-        // 获取内部轨道元素的位置
+        // Get the position of the internal track element
         const trackElement = e.currentTarget.querySelector('div') as HTMLDivElement;
         if (!trackElement) return;
 
@@ -561,14 +561,14 @@ function ReaderPage() {
                     </div>
                 </div>
 
-                {/* 控制按钮行 */}
+                {/* Control buttons row */}
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
                     padding: '8px 12px 10px',
                     gap: '12px'
                 }}>
-                    {/* 返回按钮 */}
+                    {/* Back button */}
                     <button
                         onClick={() => navigate(-1)}
                         style={{
@@ -589,7 +589,7 @@ function ReaderPage() {
                         ←
                     </button>
 
-                    {/* 标题 */}
+                    {/* Title */}
                     <span style={{
                         color: 'white',
                         fontSize: '0.95rem',
@@ -602,10 +602,10 @@ function ReaderPage() {
                         {book?.title || 'Loading...'}
                     </span>
 
-                    {/* 分隔符 */}
+                    {/* Separator */}
                     <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)' }} />
 
-                    {/* 翻页控制 */}
+                    {/* Page navigation controls */}
                     <div style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -758,7 +758,7 @@ function ReaderPage() {
                                     letterSpacing: '0.5px',
                                     borderBottom: '1px solid rgba(255,255,255,0.08)'
                                 }}>
-                                    播放速度
+                                    Playback Speed
                                 </div>
                                 {speedOptions.map(rate => (
                                     <button
@@ -778,7 +778,7 @@ function ReaderPage() {
                                             transition: 'background 0.15s'
                                         }}
                                     >
-                                        <span>{rate === 1.0 ? '正常' : `${rate}x`}</span>
+                                        <span>{rate === 1.0 ? 'Normal' : `${rate}x`}</span>
                                         {playbackRate === rate && <span style={{ color: '#6366f1' }}>✓</span>}
                                     </button>
                                 ))}
@@ -786,7 +786,7 @@ function ReaderPage() {
                         )}
                     </div>
 
-                    {/* 页面模式切换 */}
+                    {/* View mode toggle */}
                     <button
                         onClick={() => setViewMode(prev => prev === 'double' ? 'single' : 'double')}
                         style={{
@@ -804,14 +804,14 @@ function ReaderPage() {
                             transition: 'all 0.2s'
                         }}
                     >
-                        {isTwoPageMode ? '📖 双页' : '📄 单页'}
+                        {isTwoPageMode ? '📖 Double' : '📄 Single'}
                     </button>
 
-                    {/* 标记完成按钮 */}
+                    {/* Mark complete button */}
                     <button
                         onClick={handleMarkComplete}
                         disabled={isCompleted}
-                        title={isCompleted ? '已完成' : '标记为已学习'}
+                        title={isCompleted ? 'Completed' : 'Mark as completed'}
                         style={{
                             background: isCompleted
                                 ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
@@ -829,7 +829,7 @@ function ReaderPage() {
                             transition: 'all 0.2s'
                         }}
                     >
-                        {isCompleted ? '✓ 已完成' : '📚 标记完成'}
+                        {isCompleted ? '✓ Completed' : '📚 Mark Complete'}
                     </button>
                 </div>
             </div>

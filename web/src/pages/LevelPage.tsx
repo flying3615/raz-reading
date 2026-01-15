@@ -1,5 +1,5 @@
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { type Book } from '../types';
 import booksData from '../data/books.json';
 import { useProgress } from '../contexts/ProgressContext';
@@ -9,19 +9,16 @@ function LevelPage() {
     const navigate = useNavigate();
     const { progress, getLevelStats } = useProgress();
 
-    // 从静态 JSON 获取数据
-    const [books, setBooks] = useState<Book[]>([]);
-
-    useEffect(() => {
-        if (!level) return;
+    // Get books from static JSON data
+    const books = useMemo(() => {
+        if (!level) return [];
         const allBooks = booksData as unknown as Record<string, Book[]>;
-        const levelBooks = allBooks[level] || [];
-        setBooks(levelBooks);
+        return allBooks[level] || [];
     }, [level]);
 
     const stats = level ? getLevelStats(level) : { completed: 0, reading: 0, total: 0 };
 
-    // 获取书籍状态
+    // Get book status
     const getBookStatus = (bookId: string) => {
         return progress.books[bookId]?.status || 'unread';
     };
@@ -36,7 +33,7 @@ function LevelPage() {
         <div>
             <div className="page-header">
                 <button className="back-button" onClick={() => navigate(-1)}>
-                    ← 返回
+                    ← Back
                 </button>
                 <h1 className="page-title">Level {level}</h1>
                 <span style={{
@@ -52,13 +49,13 @@ function LevelPage() {
                     {stats.reading > 0 && (
                         <span style={{ color: '#f59e0b' }}>📖 {stats.reading}</span>
                     )}
-                    <span>共 {books.length} 本</span>
+                    <span>Total {books.length} books</span>
                 </span>
             </div>
 
             {books.length === 0 && (
                 <div className="error-message">
-                    暂无书籍数据
+                    No books available
                 </div>
             )}
 
@@ -82,7 +79,7 @@ function LevelPage() {
                                             : undefined
                                 }}
                             >
-                                {/* 完成标记 */}
+                                {/* Completed mark */}
                                 {status === 'completed' && (
                                     <div style={{
                                         position: 'absolute',
@@ -113,9 +110,9 @@ function LevelPage() {
                                             </span>
                                         )}
                                     </div>
-                                </div>
+                                    </div>
 
-                                {/* 进度条 */}
+                                {/* Progress bar */}
                                 {status === 'reading' && progressPercent > 0 && (
                                     <div style={{
                                         position: 'absolute',

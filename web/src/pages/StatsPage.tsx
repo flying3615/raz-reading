@@ -2,16 +2,16 @@ import { useProgress } from '../contexts/ProgressContext';
 import { Link } from 'react-router-dom';
 import booksData from '../data/books.json';
 
-// 所有等级
+// All levels
 const LEVELS = ['AA', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'Z1', 'Z2'];
 
 function formatTime(seconds: number): string {
-    if (seconds < 60) return `${seconds}秒`;
+    if (seconds < 60) return `${seconds}s`;
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}分钟`;
+    if (minutes < 60) return `${minutes}m`;
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
-    return `${hours}小时${remainingMinutes > 0 ? ` ${remainingMinutes}分钟` : ''}`;
+    return `${hours}h${remainingMinutes > 0 ? ` ${remainingMinutes}m` : ''}`;
 }
 
 function formatRelativeTime(dateStr: string): string {
@@ -22,23 +22,23 @@ function formatRelativeTime(dateStr: string): string {
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return '刚刚';
-    if (diffMins < 60) return `${diffMins}分钟前`;
-    if (diffHours < 24) return `${diffHours}小时前`;
-    if (diffDays < 7) return `${diffDays}天前`;
-    return date.toLocaleDateString('zh-CN');
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString('en-US');
 }
 
 function StatsPage() {
     const { progress, getRecentBooks, resetProgress } = useProgress();
     const allBooks = booksData as unknown as Record<string, { id: string; title: string }[]>;
 
-    // 计算总体统计
+    // Calculate overall statistics
     const totalBooks = Object.values(progress.books).length;
     const completedBooks = Object.values(progress.books).filter(b => b.status === 'completed').length;
     const readingBooks = Object.values(progress.books).filter(b => b.status === 'reading').length;
 
-    // 按等级统计
+    // Statistics by level
     const levelStats = LEVELS.map(level => {
         const totalInLevel = allBooks[level]?.length || 0;
         const booksInLevel = Object.values(progress.books).filter(b => b.level === level);
@@ -58,10 +58,10 @@ function StatsPage() {
                 alignItems: 'center',
                 gap: '12px'
             }}>
-                📊 我的阅读统计
+                📊 My Reading Stats
             </h1>
 
-            {/* 总体统计卡片 */}
+            {/* Overall Stats Cards */}
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
@@ -74,7 +74,7 @@ function StatsPage() {
                     padding: '20px',
                     color: 'white'
                 }}>
-                    <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>总阅读时长</div>
+                    <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>Total Reading Time</div>
                     <div style={{ fontSize: '1.5rem', fontWeight: 700, marginTop: '4px' }}>
                         {formatTime(progress.totalReadingTime)}
                     </div>
@@ -86,9 +86,9 @@ function StatsPage() {
                     padding: '20px',
                     color: 'white'
                 }}>
-                    <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>已完成</div>
+                    <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>Completed</div>
                     <div style={{ fontSize: '1.5rem', fontWeight: 700, marginTop: '4px' }}>
-                        {completedBooks} 本
+                        {completedBooks} books
                     </div>
                 </div>
 
@@ -98,9 +98,9 @@ function StatsPage() {
                     padding: '20px',
                     color: 'white'
                 }}>
-                    <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>阅读中</div>
+                    <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>Reading</div>
                     <div style={{ fontSize: '1.5rem', fontWeight: 700, marginTop: '4px' }}>
-                        {readingBooks} 本
+                        {readingBooks} books
                     </div>
                 </div>
 
@@ -110,21 +110,21 @@ function StatsPage() {
                     padding: '20px',
                     color: 'white'
                 }}>
-                    <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>总阅读</div>
+                    <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>Total Read</div>
                     <div style={{ fontSize: '1.5rem', fontWeight: 700, marginTop: '4px' }}>
-                        {totalBooks} 本
+                        {totalBooks} books
                     </div>
                 </div>
             </div>
 
-            {/* 等级进度 */}
+            {/* Level Progress */}
             <div style={{
                 background: 'var(--bg-secondary)',
                 borderRadius: '12px',
                 padding: '20px',
                 marginBottom: '24px'
             }}>
-                <h2 style={{ fontSize: '1.2rem', marginBottom: '16px' }}>📚 等级进度</h2>
+                <h2 style={{ fontSize: '1.2rem', marginBottom: '16px' }}>📚 Level Progress</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {levelStats.map(({ level, totalInLevel, completed, reading }) => {
                         const percentage = totalInLevel > 0 ? Math.round((completed / totalInLevel) * 100) : 0;
@@ -182,7 +182,7 @@ function StatsPage() {
                 </div>
             </div>
 
-            {/* 最近阅读 */}
+            {/* Recent Reading */}
             {recentBooks.length > 0 && (
                 <div style={{
                     background: 'var(--bg-secondary)',
@@ -190,7 +190,7 @@ function StatsPage() {
                     padding: '20px',
                     marginBottom: '24px'
                 }}>
-                    <h2 style={{ fontSize: '1.2rem', marginBottom: '16px' }}>📖 最近阅读</h2>
+                    <h2 style={{ fontSize: '1.2rem', marginBottom: '16px' }}>📖 Recent Reading</h2>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {recentBooks.map(book => (
                             <Link
@@ -218,7 +218,7 @@ function StatsPage() {
                                         marginTop: '2px'
                                     }}>
                                         Level {book.level} ·
-                                        {book.totalPages > 0 ? ` ${book.currentPage}/${book.totalPages}页 · ` : ' '}
+                                        {book.totalPages > 0 ? ` ${book.currentPage}/${book.totalPages} pages · ` : ' '}
                                         {formatTime(book.readingTime)}
                                     </div>
                                 </div>
@@ -234,12 +234,12 @@ function StatsPage() {
                 </div>
             )}
 
-            {/* 重置按钮 */}
+            {/* Reset Button */}
             {totalBooks > 0 && (
                 <div style={{ textAlign: 'center', marginTop: '32px' }}>
                     <button
                         onClick={() => {
-                            if (confirm('确定要重置所有阅读进度吗？此操作不可撤销！')) {
+                            if (confirm('Are you sure you want to reset all reading progress? This action cannot be undone!')) {
                                 resetProgress();
                             }
                         }}
@@ -253,12 +253,12 @@ function StatsPage() {
                             fontSize: '0.85rem'
                         }}
                     >
-                        重置所有进度
+                        Reset All Progress
                     </button>
                 </div>
             )}
 
-            {/* 空状态 */}
+            {/* Empty State */}
             {totalBooks === 0 && (
                 <div style={{
                     textAlign: 'center',
@@ -266,8 +266,8 @@ function StatsPage() {
                     color: 'var(--text-secondary)'
                 }}>
                     <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📖</div>
-                    <div style={{ fontSize: '1.1rem', marginBottom: '8px' }}>还没有阅读记录</div>
-                    <div style={{ fontSize: '0.9rem' }}>开始阅读第一本书吧！</div>
+                    <div style={{ fontSize: '1.1rem', marginBottom: '8px' }}>No reading records yet</div>
+                    <div style={{ fontSize: '0.9rem' }}>Start reading your first book!</div>
                     <Link
                         to="/"
                         style={{
@@ -280,7 +280,7 @@ function StatsPage() {
                             textDecoration: 'none'
                         }}
                     >
-                        浏览书籍
+                        Browse Books
                     </Link>
                 </div>
             )}
@@ -289,3 +289,4 @@ function StatsPage() {
 }
 
 export default StatsPage;
+

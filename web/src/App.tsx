@@ -18,8 +18,8 @@ function App() {
               📚 RAZ Reading
             </Link>
             <nav className="header-nav">
-              <Link to="/stats" className="nav-link">📊 统计</Link>
-              <Link to="/" className="nav-link">首页</Link>
+              <Link to="/stats" className="nav-link">📊 Stats</Link>
+              <Link to="/" className="nav-link">Home</Link>
             </nav>
           </header>
         )}
