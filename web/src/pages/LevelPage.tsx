@@ -71,12 +71,8 @@ function LevelPage() {
                                 to={`/read/${level}/${book.id}`}
                                 className="book-card"
                                 style={{
-                                    position: 'relative',
-                                    borderColor: status === 'completed'
-                                        ? 'rgba(16, 185, 129, 0.3)'
-                                        : status === 'reading'
-                                            ? 'rgba(245, 158, 11, 0.3)'
-                                            : undefined
+                                    position: 'relative'
+                                    /* Neumorphism: Removed border status indicators in favor of the badge */
                                 }}
                             >
                                 {/* Completed mark */}

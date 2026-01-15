@@ -84,7 +84,7 @@ function ReaderPage() {
         // 决策逻辑极大简化：只要容器宽高比超过 1.1 (稍微宽一点) 且宽度足够，就默认尝试双页
         const containerRatio = availableWidth / availableHeight;
 
-        let finalIsTwoPage = false;
+        let finalIsTwoPage: boolean;
         if (viewMode === 'double') {
             finalIsTwoPage = true;
         } else if (viewMode === 'single') {
@@ -222,7 +222,7 @@ function ReaderPage() {
     }, []);
 
     // Page navigation logic
-    const goToPrevPage = () => {
+    const goToPrevPage = useCallback(() => {
         setPageNumber(p => {
             if (p <= 1) return 1;
             if (isTwoPageMode) {
@@ -245,9 +245,9 @@ function ReaderPage() {
             }
             return Math.max(1, p - 1);
         });
-    };
+    },[isTwoPageMode]);
 
-    const goToNextPage = () => {
+    const goToNextPage = useCallback(() => {
         setPageNumber(p => {
             if (p >= numPages) return numPages;
             if (isTwoPageMode) {
@@ -261,20 +261,13 @@ function ReaderPage() {
             }
             return Math.min(numPages, p + 1);
         });
-    };
+    },[isTwoPageMode, numPages]);
 
     // 渲染辅助
     const renderPdfContent = () => {
         if (!pdfUrl) return null;
 
         // 计算要显示的页码
-        // 单页模式：只显示 pageNumber
-        // 双页模式：
-        //   P1: 显示 P1 (居中)
-        //   P > 1: 
-        //     如果 pageNumber 是偶数 (2, 4...) -> 显示 P(左) + P+1(右)
-        //     如果 pageNumber 是奇数 (3, 5...) -> 自动视为 P-1 的右页 -> 显示 P-1(左) + P(右)
-
         let leftPage = pageNumber;
         let rightPage: number | null = null;
         let isSpread = false;
@@ -299,14 +292,7 @@ function ReaderPage() {
                 loading={null}
                 className="pdf-document"
             >
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: '0px', // 书籍通常没有缝隙，或者很小
-                    boxShadow: isSpread ? '0 10px 30px rgba(0,0,0,0.5)' : 'none',
-                    transition: 'all 0.3s ease'
-                }}>
+                <div className="book-spread">
                     {/* 左页 (或单页) */}
                     <div style={{ position: 'relative' }}>
                         <Page
@@ -314,32 +300,22 @@ function ReaderPage() {
                             pageNumber={leftPage}
                             renderTextLayer={false}
                             renderAnnotationLayer={false}
-                            onLoadSuccess={onPageLoadSuccess} // 只用左页触发 sizing 逻辑
+                            onLoadSuccess={onPageLoadSuccess}
                             width={pageDimension.width}
                             height={pageDimension.height}
                             loading={
                                 <div style={{
                                     width: pageDimension.width || 300,
                                     height: pageDimension.height || 400,
-                                    background: 'rgba(255,255,255,0.05)'
+                                    background: '#fdfbf7'
                                 }} />
                             }
                             className={isSpread ? "pdf-page-left" : "pdf-page-single"}
                         />
-                        {/* 阴影效果: 书脊 */}
-                        {isSpread && (
-                            <div style={{
-                                position: 'absolute',
-                                top: 0,
-                                right: 0,
-                                bottom: 0,
-                                width: '30px',
-                                background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.15))',
-                                pointerEvents: 'none',
-                                zIndex: 10
-                            }} />
-                        )}
                     </div>
+
+                    {/* Spine Shadow Overlay */}
+                    {isSpread && <div className="book-spine-overlay" />}
 
                     {/* 右页 */}
                     {isSpread && rightPage && (
@@ -349,29 +325,17 @@ function ReaderPage() {
                                 pageNumber={rightPage}
                                 renderTextLayer={false}
                                 renderAnnotationLayer={false}
-                                // 右页不需要触发 sizing，跟随左页即可
                                 width={pageDimension.width}
                                 height={pageDimension.height}
                                 loading={
                                     <div style={{
                                         width: pageDimension.width || 300,
                                         height: pageDimension.height || 400,
-                                        background: 'rgba(255,255,255,0.05)'
+                                        background: '#fdfbf7'
                                     }} />
                                 }
                                 className="pdf-page-right"
                             />
-                            {/* 阴影效果: 书脊 */}
-                            <div style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                bottom: 0,
-                                width: '30px',
-                                background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.15))',
-                                pointerEvents: 'none',
-                                zIndex: 10
-                            }} />
                         </div>
                     )}
                 </div>
@@ -379,7 +343,7 @@ function ReaderPage() {
         );
     };
 
-    const togglePlay = () => {
+    const togglePlay = useCallback(() => {
         if (!audioRef.current) return;
         if (isPlaying) {
             audioRef.current.pause();
@@ -387,7 +351,7 @@ function ReaderPage() {
             audioRef.current.play();
         }
         setIsPlaying(!isPlaying);
-    };
+    },[isPlaying]);
 
     const handleTimeUpdate = () => {
         if (audioRef.current) {
@@ -447,7 +411,7 @@ function ReaderPage() {
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [numPages, isPlaying]);
+    }, [numPages, isPlaying, goToPrevPage, goToNextPage, togglePlay]);
 
     useEffect(() => {
         const handleClickOutside = () => setShowSpeedMenu(false);
@@ -470,14 +434,14 @@ function ReaderPage() {
         }}>
             {/* PDF Container - Full height minus player bar */}
             <div
+                className="book-view-container"
                 style={{
                     flex: 1,
-                    background: 'var(--bg-secondary)',
+                    // background handled by class
+                    // layout handled by class
                     borderRadius: '8px',
                     overflow: 'hidden',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
+                    // display/justify/align handled by class
                     minHeight: 0,
                     cursor: 'pointer'
                 }}
@@ -507,15 +471,17 @@ function ReaderPage() {
                 {renderPdfContent()}
             </div>
 
-            {/* 美化版控制栏 */}
+            {/* 美化版控制栏 - Neumorphic Style */}
             <div style={{
-                background: 'linear-gradient(180deg, rgba(20,20,25,0.95) 0%, rgba(10,10,15,0.98) 100%)',
-                borderRadius: '12px',
+                background: 'var(--bg-primary)',
+                borderRadius: '20px', // More rounded for Neumorphism
                 overflow: 'visible',
                 position: 'relative',
                 zIndex: 100,
-                boxShadow: '0 -4px 20px rgba(0,0,0,0.3)',
-                border: '1px solid rgba(255,255,255,0.08)'
+                boxShadow: 'var(--shadow-neu-flat)', // Neumorphic float
+                border: '1px solid rgba(255,255,255,0.02)',
+                marginTop: '1rem',
+                marginBottom: '0.5rem'
             }}>
                 {/* 进度条区域 - 增大点击区域 */}
                 <div
@@ -572,18 +538,19 @@ function ReaderPage() {
                     <button
                         onClick={() => navigate(-1)}
                         style={{
-                            background: 'rgba(255,255,255,0.08)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '8px',
-                            width: '32px',
-                            height: '32px',
-                            color: 'white',
+                            background: 'var(--bg-primary)',
+                            border: 'none',
+                            borderRadius: '10px',
+                            width: '40px', // Slightly larger
+                            height: '40px',
+                            color: 'var(--text-secondary)',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            fontSize: '1rem',
-                            transition: 'all 0.2s'
+                            fontSize: '1.2rem',
+                            transition: 'all 0.2s',
+                            boxShadow: 'var(--shadow-neu-sm)'
                         }}
                     >
                         ←
@@ -609,10 +576,11 @@ function ReaderPage() {
                     <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        background: 'rgba(255,255,255,0.05)',
-                        borderRadius: '8px',
-                        padding: '4px 8px',
-                        gap: '8px'
+                        background: 'var(--bg-primary)',
+                        borderRadius: '12px',
+                        padding: '6px 12px',
+                        gap: '10px',
+                        boxShadow: 'var(--shadow-neu-pressed)'
                     }}>
                         <button
                             onClick={goToPrevPage}

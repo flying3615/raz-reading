@@ -92,79 +92,82 @@ function HomePage() {
 
             {/* Continue Reading */}
             {recentBooks.length > 0 && (
-                <section style={{ marginBottom: '2rem' }}>
-                    <h2 style={{
-                        marginBottom: '1rem',
-                        fontSize: '1.2rem',
+                <section style={{ marginBottom: '3rem' }}>
+                    <div style={{
+                        marginBottom: '1.5rem',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between'
                     }}>
-                        <span>📖 Continue Reading</span>
-                        <Link to="/stats" style={{
-                            fontSize: '0.9rem',
-                            color: 'var(--primary)',
-                            textDecoration: 'none'
-                        }}>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                            📖 Continue Reading
+                        </h2>
+                        <Link to="/stats" className="nav-link" style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}>
                             View Stats →
                         </Link>
-                    </h2>
+                    </div>
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                        gap: '12px'
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                        gap: '1.5rem'
                     }}>
                         {recentBooks.map(book => (
                             <Link
                                 key={book.bookId}
                                 to={`/read/${book.level}/${book.bookId}`}
+                                className="book-card"
                                 style={{
-                                    background: 'var(--bg-secondary)',
-                                    borderRadius: '10px',
-                                    padding: '14px',
-                                    textDecoration: 'none',
-                                    color: 'inherit',
-                                    display: 'flex',
                                     flexDirection: 'column',
-                                    gap: '8px',
-                                    border: book.status === 'completed'
-                                        ? '1px solid rgba(16, 185, 129, 0.3)'
-                                        : '1px solid rgba(255,255,255,0.05)'
+                                    alignItems: 'flex-start',
+                                    gap: '1rem',
+                                    // Override default book-card row layout for this section if needed
                                 }}
                             >
                                 <div style={{
-                                    fontWeight: 600,
-                                    fontSize: '0.95rem',
+                                    width: '100%',
                                     display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px'
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
                                 }}>
-                                    {book.status === 'completed' && <span style={{ color: '#10b981' }}>✓</span>}
-                                    {book.title}
+                                    <span style={{ 
+                                        fontWeight: 700, 
+                                        fontSize: '1.1rem',
+                                        color: 'var(--text-primary)'
+                                    }}>
+                                        {book.title}
+                                    </span>
+                                    {book.status === 'completed' && <span style={{ color: 'var(--success)' }}>✓</span>}
                                 </div>
+                                
                                 <div style={{
-                                    fontSize: '0.8rem',
-                                    color: 'var(--text-secondary)',
+                                    width: '100%',
                                     display: 'flex',
-                                    justifyContent: 'space-between'
+                                    justifyContent: 'space-between',
+                                    fontSize: '0.875rem',
+                                    color: 'var(--text-secondary)'
                                 }}>
                                     <span>Level {book.level}</span>
                                     {book.totalPages > 0 && (
-                                        <span>{book.currentPage}/{book.totalPages} pages</span>
+                                        <span>{book.currentPage}/{book.totalPages}</span>
                                     )}
                                 </div>
-                                {/* Progress bar */}
+
+                                {/* Neumorphic Progress bar container */}
                                 {book.status === 'reading' && book.totalPages > 0 && (
                                     <div style={{
-                                        height: '3px',
-                                        background: 'rgba(255,255,255,0.1)',
-                                        borderRadius: '2px',
-                                        overflow: 'hidden'
+                                        width: '100%',
+                                        height: '8px',
+                                        background: 'var(--bg-primary)',
+                                        borderRadius: '4px',
+                                        overflow: 'hidden',
+                                        boxShadow: 'var(--shadow-neu-pressed)' // Inset shadow for progress track
                                     }}>
                                         <div style={{
                                             height: '100%',
                                             width: `${Math.round((book.currentPage / book.totalPages) * 100)}%`,
-                                            background: 'linear-gradient(90deg, #6366f1, #8b5cf6)'
+                                            background: 'var(--accent)',
+                                            borderRadius: '4px',
+                                            boxShadow: '2px 0 5px rgba(0,0,0,0.2)'
                                         }} />
                                     </div>
                                 )}

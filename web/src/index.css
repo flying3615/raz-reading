@@ -1,17 +1,29 @@
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-card: #1a1a24;
-  --bg-hover: #242430;
-  --text-primary: #ffffff;
-  --text-secondary: #a0a0b0;
+  /* Neumorphism Palette - Dark */
+  --bg-primary: #292d32;
+  --bg-secondary: #292d32; /* Same as primary for seamless nuemorphism, or slightly offset if needed */
+  --bg-card: #292d32;
+  --bg-hover: #292d32;
+  
+  --text-primary: #e0e5ec;
+  --text-secondary: #9baacf;
+  
   --accent: #6366f1;
   --accent-hover: #818cf8;
   --success: #22c55e;
-  --border: rgba(255, 255, 255, 0.1);
+  
+  /* Neumorphic Shadows */
+  --shadow-neu-flat: 8px 8px 16px #1d2023, -8px -8px 16px #353b41;
+  --shadow-neu-pressed: inset 8px 8px 16px #1d2023, inset -8px -8px 16px #353b41;
+  --shadow-neu-sm: 4px 4px 8px #1d2023, -4px -4px 8px #353b41;
+  --shadow-neu-hover: 12px 12px 20px #1d2023, -12px -12px 20px #353b41;
+  
+  --border: transparent; /* Neumorphism relies on shadows, not borders */
+  --radius-lg: 20px;
+  --radius-md: 12px;
+  
   --gradient-1: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   --gradient-2: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
-  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -44,48 +56,50 @@ a {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: var(--bg-primary);
 }
 
 .header {
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
-  padding: 1rem 2rem;
+  background: var(--bg-primary);
+  padding: 1.5rem 2rem;
   display: flex;
   align-items: center;
   gap: 1rem;
   position: sticky;
   top: 0;
   z-index: 100;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1); /* Subtle float for sticky header */
 }
 
 .header-logo {
   font-size: 1.5rem;
   font-weight: 700;
-  background: var(--gradient-1);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
 .header-nav {
   display: flex;
-  gap: 0.5rem;
+  gap: 1.5rem;
   margin-left: auto;
 }
 
 .nav-link {
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
+  font-weight: 600;
   color: var(--text-secondary);
-  transition: all 0.2s;
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-neu-flat);
+  transition: all 0.3s ease;
 }
 
 .nav-link:hover,
 .nav-link.active {
-  color: var(--text-primary);
-  background: var(--bg-hover);
+  color: var(--accent);
+  box-shadow: var(--shadow-neu-pressed);
+  transform: translateY(1px);
 }
 
 .main-content {
@@ -99,18 +113,16 @@ a {
 /* Hero Section */
 .hero {
   text-align: center;
-  padding: 3rem 0;
-  margin-bottom: 2rem;
+  padding: 4rem 0;
+  margin-bottom: 3rem;
 }
 
 .hero-title {
-  font-size: 3rem;
+  font-size: 3.5rem;
   font-weight: 800;
   margin-bottom: 1rem;
-  background: var(--gradient-1);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3), -2px -2px 4px rgba(255,255,255,0.05);
 }
 
 .hero-subtitle {
@@ -124,60 +136,59 @@ a {
   display: flex;
   justify-content: center;
   gap: 3rem;
-  margin-top: 2rem;
+  margin-top: 3rem;
 }
 
 .stat-item {
   text-align: center;
+  padding: 1.5rem 2rem;
+  border-radius: var(--radius-lg);
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-neu-flat);
 }
 
 .stat-value {
   font-size: 2.5rem;
   font-weight: 700;
   color: var(--accent);
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
 }
 
 .stat-label {
   font-size: 0.875rem;
   color: var(--text-secondary);
+  margin-top: 0.5rem;
 }
 
 /* Level Grid */
 .levels-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 1rem;
+  gap: 1.5rem;
+  padding: 1rem;
 }
 
 .level-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-}
-
-.level-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--gradient-1);
-  opacity: 0;
-  transition: opacity 0.3s;
+  box-shadow: var(--shadow-neu-flat);
+  border: 1px solid rgba(255,255,255,0.02); /* Very subtle edge definition */
 }
 
 .level-card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--accent);
+  box-shadow: var(--shadow-neu-hover);
 }
 
-.level-card:hover::before {
-  opacity: 0.1;
+.level-card:active {
+  box-shadow: var(--shadow-neu-pressed);
+  transform: translateY(0);
 }
 
 .level-card-content {
@@ -189,6 +200,7 @@ a {
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 0.25rem;
+  color: var(--text-primary);
 }
 
 .level-count {
@@ -200,55 +212,71 @@ a {
 .page-header {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  padding: 1rem;
 }
 
 .back-button {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 0.75rem 1rem;
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1.5rem;
   color: var(--text-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   transition: all 0.2s;
+  border: none;
+  box-shadow: var(--shadow-neu-flat);
+  font-weight: 600;
 }
 
 .back-button:hover {
-  background: var(--bg-hover);
-  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-neu-hover);
+}
+
+.back-button:active {
+  box-shadow: var(--shadow-neu-pressed);
+  transform: translateY(0);
 }
 
 .page-title {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
 .books-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
+  gap: 2rem;
+  padding: 1rem;
 }
 
 .book-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 1.25rem;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
+  box-shadow: var(--shadow-neu-flat);
+  border: 1px solid rgba(255,255,255,0.02);
 }
 
 .book-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-neu-hover);
+}
+
+.book-card:active {
+  box-shadow: var(--shadow-neu-pressed);
+  transform: translateY(0);
 }
 
 .book-number {
@@ -256,6 +284,7 @@ a {
   font-weight: 700;
   color: var(--accent);
   min-width: 50px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
 }
 
 .book-info {
@@ -264,201 +293,294 @@ a {
 }
 
 .book-title {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .book-meta {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
-  margin-top: 0.25rem;
 }
 
 .book-icons {
   display: flex;
   gap: 0.5rem;
   color: var(--text-secondary);
+  opacity: 0.7;
 }
 
 /* Reader Page */
-/* Reader Page */
-.reader-container {
+/* ... existing reader styles ... */
+
+/* Realistic Book Effect */
+.book-view-container {
   display: flex;
-  flex-direction: column;
-  height: calc(100vh - 10px);
-  gap: 0.25rem;
-  padding: 0.25rem;
+  justify-content: center;
+  align-items: center;
+  perspective: 1500px;
+  padding: 2rem;
+  background: var(--bg-primary); /* Or a desk texture/color if desired */
+  height: 100%;
 }
+
+.book-spread {
+  display: flex;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  transition: transform 0.3s ease;
+  position: relative;
+}
+
+/* Common Page Styles */
+.pdf-page-left, .pdf-page-right, .pdf-page-single {
+  background-color: #fdfbf7 !important; /* Warm paper white */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Page Texture/Lighting Overlay */
+.pdf-page-left::after,
+.pdf-page-right::after,
+.pdf-page-single::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Left Page Specifics */
+.pdf-page-left {
+  border-radius: 4px 0 0 4px;
+  /* Stacked pages effect on left */
+  box-shadow: 
+    -1px 1px 0 #e0e0e0,
+    -2px 2px 0 #e0e0e0,
+    -3px 3px 0 #e0e0e0,
+    -4px 4px 0 #e0e0e0,
+    -5px 5px 20px rgba(0,0,0,0.2);
+  transform-origin: right center;
+}
+
+.pdf-page-left::after {
+  left: 0;
+  right: 0;
+  /* Shadow at spine (right), highlight at curve (left-center) */
+  background: linear-gradient(
+    90deg, 
+    rgba(0,0,0,0.03) 0%, 
+    rgba(255,255,255,0.1) 10%, 
+    rgba(0,0,0,0.02) 85%, 
+    rgba(0,0,0,0.15) 100%
+  );
+}
+
+/* Right Page Specifics */
+.pdf-page-right {
+  border-radius: 0 4px 4px 0;
+  /* Stacked pages effect on right */
+  box-shadow: 
+    1px 1px 0 #e0e0e0,
+    2px 2px 0 #e0e0e0,
+    3px 3px 0 #e0e0e0,
+    4px 4px 0 #e0e0e0,
+    5px 5px 20px rgba(0,0,0,0.2);
+  transform-origin: left center;
+}
+
+.pdf-page-right::after {
+  left: 0;
+  right: 0;
+  /* Shadow at spine (left), highlight at curve (right-center) */
+  background: linear-gradient(
+    90deg, 
+    rgba(0,0,0,0.15) 0%, 
+    rgba(0,0,0,0.02) 15%, 
+    rgba(255,255,255,0.1) 90%, 
+    rgba(0,0,0,0.03) 100%
+  );
+}
+
+/* Single Page Mode */
+.pdf-page-single {
+  border-radius: 4px;
+  box-shadow: 
+    1px 1px 0 #e0e0e0,
+    2px 2px 0 #e0e0e0,
+    3px 3px 0 #e0e0e0,
+    0 10px 30px rgba(0,0,0,0.3);
+}
+
+.pdf-page-single::after {
+  left: 0;
+  right: 0;
+  /* Subtle curve on both sides */
+  background: linear-gradient(
+    90deg, 
+    rgba(0,0,0,0.05) 0%, 
+    rgba(255,255,255,0.1) 10%, 
+    rgba(255,255,255,0.1) 90%, 
+    rgba(0,0,0,0.05) 100%
+  );
+}
+
+/* Spine Shadow Overlay */
+.book-spine-overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 40px;
+  margin-left: -20px;
+  background: linear-gradient(
+    90deg, 
+    transparent 0%, 
+    rgba(0,0,0,0.1) 35%, 
+    rgba(0,0,0,0.2) 50%, 
+    rgba(0,0,0,0.1) 65%, 
+    transparent 100%
+  );
+  z-index: 20;
+  pointer-events: none;
+}
+
 
 .reader-header {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0 0.5rem;
+  padding: 0.5rem 1rem;
   min-height: 48px;
-  /* 紧凑头部 */
-}
-
-.reader-title {
-  flex: 1;
-  font-size: 1rem;
-  /* 减小标题字号 */
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .pdf-container {
   flex: 1;
-  background: var(--bg-secondary);
-  border-radius: 12px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  /* 关键：允许 flex item 收缩 */
+  box-shadow: var(--shadow-neu-pressed); /* Inset shadow for the viewer content area */
+  padding: 1rem; /* Padding for the inset look */
 }
 
 .pdf-viewer {
   flex: 1;
   overflow: hidden;
-  /* 隐藏滚动条 (由 JS 计算尺寸) */
   display: flex;
   justify-content: center;
   align-items: center;
-  /* 垂直居中 */
   padding: 4px;
-  /* 极小 padding */
-  background: #1e1e2e;
+  border-radius: var(--radius-md);
 }
 
 .pdf-controls {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  padding: 1rem;
-  background: var(--bg-card);
-  border-top: 1px solid var(--border);
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-neu-flat);
+  margin-top: 1rem;
 }
 
 .pdf-control-btn {
-  background: var(--bg-hover);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
+  background: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1.5rem;
   color: var(--text-primary);
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: var(--shadow-neu-sm);
 }
 
 .pdf-control-btn:hover:not(:disabled) {
-  background: var(--accent);
-  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: var(--shadow-neu-hover);
+  transform: translateY(-2px);
+}
+
+.pdf-control-btn:active:not(:disabled) {
+  box-shadow: var(--shadow-neu-pressed);
+  transform: translateY(0);
 }
 
 .pdf-control-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.page-info {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  min-width: 100px;
-  text-align: center;
+  box-shadow: none;
 }
 
 /* Audio Player */
 .audio-player {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 1rem 1.5rem;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 2rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 2rem;
+  box-shadow: var(--shadow-neu-flat);
+  margin-top: 1rem;
 }
 
 .play-button {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: var(--gradient-1);
+  background: var(--bg-primary);
   border: none;
-  color: white;
+  color: var(--accent);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
-  transition: transform 0.2s, box-shadow 0.2s;
-  flex-shrink: 0;
+  font-size: 1.5rem;
+  transition: all 0.3s;
+  box-shadow: var(--shadow-neu-flat);
 }
 
 .play-button:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+  box-shadow: var(--shadow-neu-hover);
+}
+
+.play-button:active {
+  box-shadow: var(--shadow-neu-pressed);
+  transform: scale(0.95);
 }
 
 .audio-progress {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .progress-bar {
   width: 100%;
-  height: 6px;
-  background: var(--bg-hover);
-  border-radius: 3px;
+  height: 12px;
+  background: var(--bg-primary);
+  border-radius: 6px;
   cursor: pointer;
   overflow: hidden;
+  box-shadow: var(--shadow-neu-pressed); /* Inset channel for slider */
 }
 
 .progress-fill {
   height: 100%;
-  background: var(--gradient-1);
-  border-radius: 3px;
-  transition: width 0.1s;
-}
-
-.time-display {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-}
-
-.volume-control {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--text-secondary);
-}
-
-.volume-slider {
-  width: 80px;
-  height: 4px;
-  -webkit-appearance: none;
-  appearance: none;
-  background: var(--bg-hover);
-  border-radius: 2px;
-  cursor: pointer;
-}
-
-.volume-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
   background: var(--accent);
-  cursor: pointer;
+  border-radius: 6px;
+  transition: width 0.1s;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.2);
 }
 
 /* Loading & Error States */
@@ -474,10 +596,11 @@ a {
 .spinner {
   width: 48px;
   height: 48px;
-  border: 3px solid var(--border);
+  border: 4px solid var(--bg-primary);
   border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  box-shadow: var(--shadow-neu-flat);
 }
 
 @keyframes spin {
@@ -487,12 +610,12 @@ a {
 }
 
 .error-message {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 12px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
   padding: 1rem 1.5rem;
   color: #ef4444;
   text-align: center;
+  box-shadow: var(--shadow-neu-pressed);
 }
 
 /* Responsive */
@@ -506,11 +629,16 @@ a {
   }
 
   .hero-title {
-    font-size: 2rem;
+    font-size: 2.5rem;
   }
 
   .hero-stats {
     gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .stat-item {
+    min-width: 120px;
   }
 
   .stat-value {
@@ -519,6 +647,7 @@ a {
 
   .levels-grid {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 1rem;
   }
 
   .books-grid {
@@ -527,6 +656,7 @@ a {
 
   .audio-player {
     flex-wrap: wrap;
+    padding: 1rem;
   }
 
   .volume-control {

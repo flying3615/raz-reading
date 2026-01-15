@@ -119,12 +119,12 @@ function StatsPage() {
 
             {/* Level Progress */}
             <div style={{
-                background: 'var(--bg-secondary)',
-                borderRadius: '12px',
-                padding: '20px',
-                marginBottom: '24px'
-            }}>
-                <h2 style={{ fontSize: '1.2rem', marginBottom: '16px' }}>📚 Level Progress</h2>
+                                background: 'var(--bg-primary)',
+                                borderRadius: '12px',
+                                padding: '20px',
+                                marginBottom: '24px',
+                                boxShadow: 'var(--shadow-neu-flat)'
+                            }}>                <h2 style={{ fontSize: '1.2rem', marginBottom: '16px' }}>📚 Level Progress</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {levelStats.map(({ level, totalInLevel, completed, reading }) => {
                         const percentage = totalInLevel > 0 ? Math.round((completed / totalInLevel) * 100) : 0;
@@ -185,12 +185,12 @@ function StatsPage() {
             {/* Recent Reading */}
             {recentBooks.length > 0 && (
                 <div style={{
-                    background: 'var(--bg-secondary)',
-                    borderRadius: '12px',
-                    padding: '20px',
-                    marginBottom: '24px'
-                }}>
-                    <h2 style={{ fontSize: '1.2rem', marginBottom: '16px' }}>📖 Recent Reading</h2>
+                                    background: 'var(--bg-primary)',
+                                    borderRadius: '12px',
+                                    padding: '20px',
+                                    marginBottom: '24px',
+                                    boxShadow: 'var(--shadow-neu-flat)'
+                                }}>                    <h2 style={{ fontSize: '1.2rem', marginBottom: '16px' }}>📖 Recent Reading</h2>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {recentBooks.map(book => (
                             <Link
