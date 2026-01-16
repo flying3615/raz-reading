@@ -372,8 +372,9 @@ function ReaderPage() {
     const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (!audioRef.current || !duration) return;
 
-        // Get the position of the internal track element
-        const trackElement = e.currentTarget.querySelector('div') as HTMLDivElement;
+        // Get the track element directly by finding the element with flex: 1
+        const container = e.currentTarget;
+        const trackElement = container.firstElementChild as HTMLDivElement;
         if (!trackElement) return;
 
         const rect = trackElement.getBoundingClientRect();
