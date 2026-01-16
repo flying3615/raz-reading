@@ -281,6 +281,10 @@ function ReaderPage() {
             // 只有当左页不是最后一页时，才显示右页
             if (leftPage < numPages) {
                 rightPage = leftPage + 1;
+            } else {
+                // 如果没有右页 (e.g. 最后一页是偶数页)，回退到单页显示模式
+                // 这样可以应用 pdf-page-single 样式 (圆角 + 居中)，而不是 pdf-page-left (切断的右边缘)
+                isSpread = false;
             }
         }
 
@@ -292,7 +296,7 @@ function ReaderPage() {
                 loading={null}
                 className="pdf-document"
             >
-                <div className="book-spread">
+                <div className={isSpread ? "book-spread" : "book-single-wrapper"} style={{ display: 'flex' }}>
                     {/* 左页 (或单页) */}
                     <div style={{ position: 'relative' }}>
                         <Page
@@ -315,7 +319,7 @@ function ReaderPage() {
                     </div>
 
                     {/* Spine Shadow Overlay */}
-                    {isSpread && <div className="book-spine-overlay" />}
+                    {isSpread && rightPage && <div className="book-spine-overlay" />}
 
                     {/* 右页 */}
                     {isSpread && rightPage && (
