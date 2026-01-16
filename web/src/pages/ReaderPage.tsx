@@ -4,6 +4,7 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import { type Book, API_BASE } from '../types';
 import booksData from '../data/books.json';
 import { useProgress } from '../contexts/ProgressContext';
+import { AudioRecorder } from '../components/AudioRecorder';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -35,6 +36,39 @@ function ReaderPage() {
     const [isCompleted, setIsCompleted] = useState(false);
     const [viewMode, setViewMode] = useState<'auto' | 'single' | 'double'>('auto');
     const [isTwoPageMode, setIsTwoPageMode] = useState(false);
+
+    // Recording & Analysis State
+    const [showRecorder, setShowRecorder] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [analysisResult, setAnalysisResult] = useState<{ score: number; feedback: string } | null>(null);
+
+    const handleAnalysisStart = async (audioBlob: Blob) => {
+        setIsAnalyzing(true);
+        try {
+            const formData = new FormData();
+            formData.append('audio', audioBlob);
+
+            const response = await fetch(`${API_BASE}/analyze-reading`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('Analysis request failed');
+            }
+
+            const result = await response.json();
+            setAnalysisResult({
+                score: result.score,
+                feedback: result.feedback
+            });
+        } catch (error) {
+            console.error('Analysis failed:', error);
+            alert('Oh no! Analysis failed. Please try again.');
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
 
     // 阅读时间跟踪
     const lastSaveTime = useRef<number>(Date.now());
@@ -245,7 +279,7 @@ function ReaderPage() {
             }
             return Math.max(1, p - 1);
         });
-    },[isTwoPageMode]);
+    }, [isTwoPageMode]);
 
     const goToNextPage = useCallback(() => {
         setPageNumber(p => {
@@ -261,7 +295,7 @@ function ReaderPage() {
             }
             return Math.min(numPages, p + 1);
         });
-    },[isTwoPageMode, numPages]);
+    }, [isTwoPageMode, numPages]);
 
     // 渲染辅助
     const renderPdfContent = () => {
@@ -355,7 +389,7 @@ function ReaderPage() {
             audioRef.current.play();
         }
         setIsPlaying(!isPlaying);
-    },[isPlaying]);
+    }, [isPlaying]);
 
     const handleTimeUpdate = () => {
         if (audioRef.current) {
@@ -780,6 +814,27 @@ function ReaderPage() {
                         {isTwoPageMode ? '📖 Double' : '📄 Single'}
                     </button>
 
+                    {/* Practice Mode Button */}
+                    <button
+                        onClick={() => setShowRecorder(!showRecorder)}
+                        style={{
+                            background: showRecorder ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.08)',
+                            border: showRecorder ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255,255,255,0.1)',
+                            color: showRecorder ? '#fca5a5' : 'white',
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontSize: '0.9rem',
+                            fontWeight: 600,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        <span>🎙️</span>
+                    </button>
+
                     {/* Mark complete button */}
                     <button
                         onClick={handleMarkComplete}
@@ -814,6 +869,75 @@ function ReaderPage() {
                 onLoadedMetadata={handleLoadedMetadata}
                 onEnded={() => setIsPlaying(false)}
             />
+
+            {/* Recorder Modal/Overlay */}
+            {showRecorder && (
+                <div style={{
+                    position: 'absolute',
+                    bottom: '80px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 200,
+                    width: '90%',
+                    maxWidth: '400px'
+                }}>
+                    <AudioRecorder
+                        onAnalysisStart={handleAnalysisStart}
+                        isAnalyzing={isAnalyzing}
+                    />
+                </div>
+            )}
+
+            {/* Analysis Result Modal */}
+            {analysisResult && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0,0,0,0.8)',
+                    zIndex: 300,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '20px'
+                }}>
+                    <div style={{
+                        background: '#1e1e24',
+                        padding: '24px',
+                        borderRadius: '16px',
+                        maxWidth: '500px',
+                        width: '100%',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        animation: 'fadeIn 0.3s ease'
+                    }}>
+                        <h3 style={{ marginTop: 0, color: 'white', display: 'flex', justifyContent: 'space-between' }}>
+                            <span>🎉 Analysis Content</span>
+                            <span style={{ color: '#8b5cf6' }}>Score: {analysisResult.score}</span>
+                        </h3>
+                        <p style={{ color: 'rgba(255,255,255,0.8)', lineHeight: '1.6' }}>
+                            {analysisResult.feedback}
+                        </p>
+                        <button
+                            onClick={() => setAnalysisResult(null)}
+                            style={{
+                                width: '100%',
+                                marginTop: '20px',
+                                padding: '12px',
+                                background: 'white',
+                                color: 'black',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

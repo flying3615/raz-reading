@@ -3,6 +3,7 @@
 interface Env {
     RAZ_BUCKET: R2Bucket;
     CORS_ORIGIN: string;
+    AI: Ai;
 }
 
 interface Book {
@@ -196,6 +197,92 @@ async function getAudio(level: string, fileName: string, env: Env): Promise<Resp
     });
 }
 
+// 录音分析
+async function analyzeReading(request: Request, env: Env): Promise<Response> {
+    if (request.method !== 'POST') {
+        return new Response('Method not allowed', { status: 405, headers: corsHeaders(env.CORS_ORIGIN) });
+    }
+
+    try {
+        const formData = await request.formData();
+        const audioFile = formData.get('audio') as File;
+
+        if (!audioFile) {
+            return new Response('No audio file provided', { status: 400, headers: corsHeaders(env.CORS_ORIGIN) });
+        }
+
+        // 步骤 1: 转写 (Whisper)
+        const audioBuffer = await audioFile.arrayBuffer();
+        // Whisper input expects an array of numbers (float32) or standard audio file bytes
+        // Cloudflare AI run interface for whisper handles raw bytes if passed in input
+        const transcription = await env.AI.run('@cf/openai/whisper', {
+            audio: [...new Uint8Array(audioBuffer)],
+        });
+
+        const transcribedText = transcription.text || '';
+
+        // 步骤 2: 点评 (Llama 3)
+        // 让 AI 扮演一位鼓励型但严谨的英语老师
+        const systemPrompt = `You are a friendly and encouraging English teacher. 
+        Your student just read a passage aloud. I will provide you with the text they spoke (transcribed from audio).
+        
+        Please provide feedback in the following JSON format:
+        {
+            "score": number (0-100),
+            "feedback": "string (1-2 sentences of encouraging feedback)",
+            "pronunciation_issues": ["word1", "word2"] (list of words that look incorrect or misspelled in the transcription, max 3)
+        }
+
+        The student's transcription is below. Focus on fluency and clarity. If the text is gibberish, give a low score.`;
+
+        const response = await env.AI.run('@cf/meta/llama-3-8b-instruct', {
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: `Student's transcription: "${transcribedText}"` }
+            ]
+        });
+
+        // 尝试解析 JSON，如果 AI 返回了额外文本，尝试提取 JSON 部分
+        let result = { score: 0, feedback: "Analysis failed", pronunciation_issues: [] };
+        // @ts-ignore
+        const aiRawResponse = response.response;
+
+        try {
+            // 简单的 JSON 提取逻辑
+            const jsonMatch = aiRawResponse.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                result = JSON.parse(jsonMatch[0]);
+            } else {
+                result = JSON.parse(aiRawResponse);
+            }
+        } catch (e) {
+            // 如果解析失败，回退到纯文本反馈
+            result.feedback = aiRawResponse;
+            result.score = 70; // 默认分
+        }
+
+        return new Response(JSON.stringify({
+            transcription: transcribedText,
+            ...result
+        }), {
+            headers: {
+                'Content-Type': 'application/json',
+                ...corsHeaders(env.CORS_ORIGIN),
+            },
+        });
+
+    } catch (error) {
+        console.error('Analysis error:', error);
+        return new Response(JSON.stringify({ error: 'DeepSeek analysis failed' }), {
+            status: 500,
+            headers: {
+                'Content-Type': 'application/json',
+                ...corsHeaders(env.CORS_ORIGIN),
+            },
+        });
+    }
+}
+
 // 路由处理
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
@@ -225,6 +312,10 @@ export default {
         const audioMatch = path.match(/^\/api\/audio\/([^/]+)\/(.+)$/);
         if (audioMatch) {
             return getAudio(audioMatch[1], audioMatch[2], env);
+        }
+
+        if (path === '/api/analyze-reading') {
+            return analyzeReading(request, env);
         }
 
         return new Response('Not Found', {

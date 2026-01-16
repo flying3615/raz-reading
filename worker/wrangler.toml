@@ -9,3 +9,5 @@ bucket_name = "raz-files"
 
 [vars]
 CORS_ORIGIN = "*"
+[ai]
+binding = "AI"
