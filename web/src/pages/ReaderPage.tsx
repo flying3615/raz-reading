@@ -1046,8 +1046,29 @@ function ReaderPage() {
                                             borderRadius: '12px',
                                             border: '1px solid rgba(255,255,255,0.05)'
                                         }}>
-                                            <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white', marginBottom: '5px' }}>{vocab.word}</div>
-                                            <div style={{ color: '#a5b4fc', fontSize: '0.95rem', fontStyle: 'italic', lineHeight: '1.4' }}>{vocab.definition}</div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
+                                                <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white' }}>{vocab.word}</div>
+                                                {vocab.partOfSpeech && (
+                                                    <span style={{
+                                                        background: 'rgba(255,255,255,0.1)',
+                                                        color: '#e2e8f0',
+                                                        fontSize: '0.7rem',
+                                                        padding: '2px 6px',
+                                                        borderRadius: '4px',
+                                                        fontFamily: 'monospace'
+                                                    }}>
+                                                        {vocab.partOfSpeech}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div style={{ color: '#a5b4fc', fontSize: '0.95rem', lineHeight: '1.4', marginBottom: vocab.example ? '8px' : '0' }}>
+                                                {vocab.definition}
+                                            </div>
+                                            {vocab.example && (
+                                                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', fontStyle: 'italic', paddingLeft: '8px', borderLeft: '2px solid rgba(255,255,255,0.1)' }}>
+                                                    "{vocab.example}"
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>

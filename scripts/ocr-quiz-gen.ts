@@ -220,6 +220,8 @@ Based on the following story text (extracted via OCR), please generate:
 1. 3 Multiple choice quiz questions (simple English, suitable for kids).
 2. **ALL** vocabulary words found in the text that seem to be part of a "Glossary" or "Vocabulary" list (usually at the end or beginning). If no explicit list is found, identify key difficult words. **Do NOT limit the number of words.**
 3. Provide simple English definitions for the vocabulary words. **NO Chinese translations.**
+4. Identify the **part of speech** (e.g., noun, verb, adjective).
+5. Provide a simple **example sentence** using the word (preferably from the story, or a simple one if not found).
 
 Story text:
 "${fullText.substring(0, 3000)}"
@@ -230,7 +232,7 @@ Return ONLY valid JSON in the following format:
     { "question": "...", "options": ["A", "B", "C"], "correctAnswer": 0 } // index of correct option
   ],
   "vocabulary": [
-    { "word": "...", "definition": "..." } // English definition only
+    { "word": "...", "definition": "...", "partOfSpeech": "...", "example": "..." } // English definition only
   ]
 }`;
 
