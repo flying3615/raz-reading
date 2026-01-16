@@ -997,8 +997,7 @@ function ReaderPage() {
                                             border: '1px solid rgba(255,255,255,0.05)'
                                         }}>
                                             <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white', marginBottom: '5px' }}>{vocab.word}</div>
-                                            <div style={{ color: '#818cf8', fontSize: '0.9rem', marginBottom: '5px' }}>{vocab.translation}</div>
-                                            <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', fontStyle: 'italic' }}>"{vocab.definition}"</div>
+                                            <div style={{ color: '#a5b4fc', fontSize: '0.95rem', fontStyle: 'italic', lineHeight: '1.4' }}>{vocab.definition}</div>
                                         </div>
                                     ))}
                                 </div>

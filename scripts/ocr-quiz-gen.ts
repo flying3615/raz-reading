@@ -118,10 +118,11 @@ async function main() {
             // 3. AI 生成题目
             console.log(`   🧠 Generating Quiz & Vocab with DeepSeek...`);
 
-            const prompt = `You are a helper for kids reading content generation.
-Based on the following story text (extracted via OCR, so it might have errors), please generate:
+            const prompt = `You are a helpful assistant for kids' reading content.
+Based on the following story text (extracted via OCR), please generate:
 1. 3 Multiple choice quiz questions (simple English, suitable for kids).
-2. 5 Key vocabulary words with simple definitions and Chinese translations.
+2. **ALL** vocabulary words found in the text that seem to be part of a "Glossary" or "Vocabulary" list (usually at the end or beginning). If no explicit list is found, identify key difficult words. **Do NOT limit the number of words.**
+3. Provide simple English definitions for the vocabulary words. **NO Chinese translations.**
 
 Story text:
 "${fullText.substring(0, 3000)}"
@@ -132,7 +133,7 @@ Return ONLY valid JSON in the following format:
     { "question": "...", "options": ["A", "B", "C"], "correctAnswer": 0 } // index of correct option
   ],
   "vocabulary": [
-    { "word": "...", "definition": "...", "translation": "..." }
+    { "word": "...", "definition": "..." } // English definition only
   ]
 }`;
 
