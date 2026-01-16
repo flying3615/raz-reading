@@ -53,7 +53,7 @@ function ReaderPage() {
     const [analysisResult, setAnalysisResult] = useState<{ score: number; feedback: string } | null>(null);
 
     // Practice Content State
-    const [practiceContent, setPracticeContent] = useState<{ quiz: any[], vocabulary: any[] } | null>(null);
+    const [practiceContent, setPracticeContent] = useState<{ quiz: any[], vocabulary: any[], discussion?: any[] } | null>(null);
     const [showPractice, setShowPractice] = useState(false);
 
     // Load practice content
@@ -1122,6 +1122,65 @@ function ReaderPage() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Discussion Section */}
+                        {practiceContent.discussion && practiceContent.discussion.length > 0 && (
+                            <div style={{ marginTop: '30px', paddingBottom: '20px' }}>
+                                <h3 style={{ color: '#c084fc', marginBottom: '15px' }}>🗣️ Discussion</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    {practiceContent.discussion.map((item, idx) => (
+                                        <div key={idx} style={{
+                                            background: 'rgba(255,255,255,0.05)',
+                                            padding: '20px',
+                                            borderRadius: '16px',
+                                            border: '1px solid rgba(255,255,255,0.05)'
+                                        }}>
+                                            <div style={{
+                                                fontSize: '1.1rem',
+                                                color: 'white',
+                                                marginBottom: '15px',
+                                                lineHeight: '1.5',
+                                                display: 'flex',
+                                                gap: '10px'
+                                            }}>
+                                                <span style={{ fontSize: '1.4rem' }}>🤔</span>
+                                                {item.question}
+                                            </div>
+
+                                            <details style={{
+                                                marginTop: '10px',
+                                                borderTop: '1px solid rgba(255,255,255,0.1)',
+                                                paddingTop: '10px'
+                                            }}>
+                                                <summary style={{
+                                                    cursor: 'pointer',
+                                                    color: '#c084fc',
+                                                    fontWeight: 500,
+                                                    outline: 'none',
+                                                    listStyle: 'none', // helps hide default arrow in some browsers
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '6px'
+                                                }}>
+                                                    👀 Reveal Analysis
+                                                </summary>
+                                                <div style={{
+                                                    marginTop: '10px',
+                                                    color: 'rgba(255,255,255,0.7)',
+                                                    fontSize: '0.95rem',
+                                                    lineHeight: '1.6',
+                                                    background: 'rgba(192, 132, 252, 0.1)',
+                                                    padding: '12px',
+                                                    borderRadius: '8px'
+                                                }}>
+                                                    {item.analysis}
+                                                </div>
+                                            </details>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

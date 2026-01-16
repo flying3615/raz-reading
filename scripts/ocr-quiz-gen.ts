@@ -222,6 +222,7 @@ Based on the following story text (extracted via OCR), please generate:
 3. Provide simple English definitions for the vocabulary words. **NO Chinese translations.**
 4. Identify the **part of speech** (e.g., noun, verb, adjective).
 5. Provide a simple **example sentence** using the word (preferably from the story, or a simple one if not found).
+6. Provide 1-2 **open-ended discussion questions** based on the story to encourage critical thinking. Include a brief **analysis/answer key** for parents.
 
 Story text:
 "${fullText.substring(0, 3000)}"
@@ -233,6 +234,9 @@ Return ONLY valid JSON in the following format:
   ],
   "vocabulary": [
     { "word": "...", "definition": "...", "partOfSpeech": "...", "example": "..." } // English definition only
+  ],
+  "discussion": [
+    { "question": "...", "analysis": "..." }
   ]
 }`;
 
