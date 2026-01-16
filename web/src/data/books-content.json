@@ -27,81 +27,111 @@
           "question": "What did Abigail Adams love to do?",
           "options": [
             "Play sports",
-            "Read",
-            "Paint"
+            "Read books",
+            "Paint pictures"
           ],
           "correctAnswer": 1
         }
       ],
       "vocabulary": [
         {
-          "word": "causes",
-          "definition": "Reasons or things that make something happen"
-        },
-        {
           "word": "First Lady",
-          "definition": "The wife of the President of the United States"
+          "definition": "The wife of the President of the United States.",
+          "partOfSpeech": "noun",
+          "example": "Abigail Adams was the First Lady when her husband John Adams was president."
         },
         {
           "word": "colonies",
-          "definition": "Places that are ruled by another country"
+          "definition": "Places that are ruled by another country.",
+          "partOfSpeech": "noun",
+          "example": "Abigail was born in Massachusetts, one of the thirteen colonies."
         },
         {
           "word": "Great Britain",
-          "definition": "A country that ruled the American colonies"
+          "definition": "A country that ruled the American colonies before they became independent.",
+          "partOfSpeech": "noun",
+          "example": "The colonies belonged to Great Britain before the United States was formed."
         },
         {
           "word": "equal rights",
-          "definition": "When everyone has the same fair treatment"
+          "definition": "When all people have the same opportunities and treatment.",
+          "partOfSpeech": "noun",
+          "example": "Abigail Adams believed in equal rights for women."
         },
         {
           "word": "independent",
-          "definition": "Free to make your own decisions, not ruled by others"
+          "definition": "Free from control by others; able to make your own decisions.",
+          "partOfSpeech": "adjective",
+          "example": "The United States became an independent country after the war."
         },
         {
           "word": "portrait",
-          "definition": "A picture of a person"
+          "definition": "A painting, drawing, or photograph of a person.",
+          "partOfSpeech": "noun",
+          "example": "This portrait of Abigail Adams was made in 1795."
         },
         {
           "word": "shape",
-          "definition": "To help create or influence something"
+          "definition": "To influence or help create something.",
+          "partOfSpeech": "verb",
+          "example": "Abigail Adams helped shape the United States' first years as a new country."
         },
         {
           "word": "belonged",
-          "definition": "Was owned or controlled by someone"
+          "definition": "Was owned by or was part of something.",
+          "partOfSpeech": "verb",
+          "example": "At the time, the colonies belonged to Great Britain."
         },
         {
           "word": "allowed",
-          "definition": "Given permission to do something"
+          "definition": "Given permission to do something.",
+          "partOfSpeech": "verb",
+          "example": "Most girls were not allowed to go to school."
+        },
+        {
+          "word": "smart",
+          "definition": "Intelligent; able to learn and understand things quickly.",
+          "partOfSpeech": "adjective",
+          "example": "Abigail was smart and loved to read."
+        }
+      ],
+      "discussion": [
+        {
+          "question": "Why do you think it was important that Abigail Adams's mother taught her to read and write when most girls weren't allowed to go to school?",
+          "analysis": "This question encourages children to think about the value of education and gender equality. Parents can discuss how reading and writing gave Abigail knowledge and power to share her ideas, which helped her become an important historical figure. It also highlights how parents can make a difference in their children's lives."
+        },
+        {
+          "question": "How might Abigail Adams's love of reading have helped her 'shape the United States' as the story says?",
+          "analysis": "This helps children connect personal interests with real-world impact. Parents can guide discussion about how reading teaches us about the world, gives us new ideas, and helps us communicate better. Abigail likely used what she learned from reading to understand politics and give good advice during America's early years."
         }
       ]
     },
     "2": {
       "quiz": [
         {
-          "question": "What is one thing kites can be used as?",
+          "question": "What did Ben Franklin tie to his kite string to test electricity?",
           "options": [
-            "Toys only",
-            "Tools only",
-            "Both toys and tools"
+            "A metal key",
+            "A piece of paper",
+            "A feather"
+          ],
+          "correctAnswer": 0
+        },
+        {
+          "question": "How long ago was the famous Chinese kite story written?",
+          "options": [
+            "100 years ago",
+            "500 years ago",
+            "Over 2,000 years ago"
           ],
           "correctAnswer": 2
         },
         {
-          "question": "Who used a kite to prove lightning was made of electricity?",
+          "question": "Why should you NOT try Ben Franklin's kite experiment?",
           "options": [
-            "A Chinese man",
-            "Ben Franklin",
-            "Maria Voris"
-          ],
-          "correctAnswer": 1
-        },
-        {
-          "question": "Why did the man in the Chinese story tie himself to a kite?",
-          "options": [
-            "To fly for fun",
-            "To attack a fort",
-            "To catch a bird"
+            "It's boring",
+            "It's not safe",
+            "Kites are too expensive"
           ],
           "correctAnswer": 1
         }
@@ -109,103 +139,206 @@
       "vocabulary": [
         {
           "word": "kite",
-          "definition": "A toy that flies in the sky, often made of paper or cloth on a frame."
+          "definition": "A toy that flies in the sky, usually made of paper or cloth on a frame with a string.",
+          "partOfSpeech": "noun",
+          "example": "The children flew their kite on a windy day."
         },
         {
           "word": "simple",
-          "definition": "Easy to do or understand."
+          "definition": "Easy to do or understand.",
+          "partOfSpeech": "adjective",
+          "example": "It's very simple to make a kite."
         },
         {
           "word": "tools",
-          "definition": "Things used to do a job or task."
+          "definition": "Objects used to do work or for a special purpose.",
+          "partOfSpeech": "noun",
+          "example": "Kites can be both toys and tools."
         },
         {
           "word": "history",
-          "definition": "The story of what happened in the past."
-        },
-        {
-          "word": "named after",
-          "definition": "Given a name because of something else."
-        },
-        {
-          "word": "floats",
-          "definition": "Moves lightly through the air or on water."
-        },
-        {
-          "word": "famous",
-          "definition": "Well-known by many people."
-        },
-        {
-          "word": "attack",
-          "definition": "To try to hurt or damage something."
+          "definition": "The story of what happened in the past.",
+          "partOfSpeech": "noun",
+          "example": "The history of kites goes back a long time."
         },
         {
           "word": "fort",
-          "definition": "A strong building used for protection in battles."
-        },
-        {
-          "word": "tied",
-          "definition": "Fastened with a string or rope."
-        },
-        {
-          "word": "huge",
-          "definition": "Very big."
-        },
-        {
-          "word": "scared",
-          "definition": "Made afraid or frightened."
+          "definition": "A strong building or place that protects people from attack.",
+          "partOfSpeech": "noun",
+          "example": "The man used a kite to attack a fort."
         },
         {
           "word": "soldiers",
-          "definition": "People who fight in an army."
+          "definition": "People who fight in an army.",
+          "partOfSpeech": "noun",
+          "example": "The kite scared the soldiers in the fort."
         },
         {
           "word": "inventor",
-          "definition": "A person who creates something new."
+          "definition": "A person who creates something new.",
+          "partOfSpeech": "noun",
+          "example": "Ben Franklin was a famous inventor."
         },
         {
           "word": "lightning",
-          "definition": "A bright flash of light in the sky during a storm."
+          "definition": "A bright flash of light in the sky during a storm.",
+          "partOfSpeech": "noun",
+          "example": "Ben Franklin thought lightning was made of electricity."
         },
         {
           "word": "electricity",
-          "definition": "A form of energy that can make lights work and power machines."
+          "definition": "A form of energy that can make light, heat, and power machines.",
+          "partOfSpeech": "noun",
+          "example": "The electricity ran down the wet string to the metal key."
         },
         {
           "word": "prove",
-          "definition": "To show that something is true."
+          "definition": "To show that something is true.",
+          "partOfSpeech": "verb",
+          "example": "He wanted to prove his idea about lightning."
         },
         {
           "word": "stormy",
-          "definition": "Having bad weather with rain, wind, and sometimes lightning."
-        },
-        {
-          "word": "metal",
-          "definition": "A hard material like iron, gold, or silver."
-        },
-        {
-          "word": "key",
-          "definition": "A small piece of metal used to open locks."
-        },
-        {
-          "word": "string",
-          "definition": "A thin piece of cord or thread."
-        },
-        {
-          "word": "clouds",
-          "definition": "White or gray collections of water in the sky."
+          "definition": "Having bad weather with rain, wind, and sometimes lightning.",
+          "partOfSpeech": "adjective",
+          "example": "One day when it was stormy, he flew his kite."
         },
         {
           "word": "shock",
-          "definition": "A sudden, surprising feeling or a small electric feeling."
+          "definition": "A sudden, strong feeling when electricity touches you.",
+          "partOfSpeech": "noun",
+          "example": "The electricity gave him a shock."
         },
         {
           "word": "safe",
-          "definition": "Not dangerous; protected from harm."
+          "definition": "Not dangerous; protected from harm.",
+          "partOfSpeech": "adjective",
+          "example": "It's not safe to fly a kite in a storm."
+        }
+      ],
+      "discussion": [
+        {
+          "question": "Why do you think the man in the Chinese story used a kite to attack the fort instead of another method? What does this tell us about how people solve problems?",
+          "analysis": "This question encourages kids to think creatively about problem-solving. The man likely used a kite because it allowed him to fly over the wall when he couldn't get inside normally. This shows that people can use everyday objects in clever ways to solve difficult problems. Parents can discuss how thinking outside the box and using available resources creatively can lead to innovative solutions."
         },
         {
-          "word": "hurt",
-          "definition": "To cause pain or injury."
+          "question": "Ben Franklin's experiment was dangerous, but it helped people learn about electricity. When is it okay to try something risky to learn something new, and when should we be careful?",
+          "analysis": "This question helps children understand risk assessment and safety. Ben Franklin's experiment taught us important science, but it was very dangerous. Kids should learn that while curiosity is good, safety always comes first. Parents can discuss how we can learn from books, teachers, and safe experiments instead of doing dangerous things ourselves. This teaches critical thinking about balancing curiosity with caution."
+        }
+      ]
+    },
+    "3": {
+      "quiz": [
+        {
+          "question": "What family does the elk belong to?",
+          "options": [
+            "The deer family",
+            "The cat family",
+            "The bear family"
+          ],
+          "correctAnswer": 0
+        },
+        {
+          "question": "Where do giraffes live?",
+          "options": [
+            "In savannas and open woodlands",
+            "In cold mountains",
+            "In oceans"
+          ],
+          "correctAnswer": 0
+        },
+        {
+          "question": "What are elephants known for having?",
+          "options": [
+            "Long trunks and ivory tusks",
+            "Spots all over their bodies",
+            "Thick fur"
+          ],
+          "correctAnswer": 0
+        }
+      ],
+      "vocabulary": [
+        {
+          "word": "elk",
+          "definition": "A large animal in the deer family with big antlers.",
+          "partOfSpeech": "noun",
+          "example": "The elk is in the deer family."
+        },
+        {
+          "word": "antlers",
+          "definition": "The hard, bony growths on the heads of animals like elk.",
+          "partOfSpeech": "noun",
+          "example": "Male elk have large antlers."
+        },
+        {
+          "word": "giraffes",
+          "definition": "Very tall animals with long necks and spots.",
+          "partOfSpeech": "noun",
+          "example": "Giraffes are very tall with long necks."
+        },
+        {
+          "word": "savannas",
+          "definition": "Flat, grassy areas with few trees, often found in warm places.",
+          "partOfSpeech": "noun",
+          "example": "Giraffes live in savannas and open woodlands."
+        },
+        {
+          "word": "woodlands",
+          "definition": "Areas with many trees, but not as dense as forests.",
+          "partOfSpeech": "noun",
+          "example": "Giraffes live in savannas and open woodlands."
+        },
+        {
+          "word": "elephants",
+          "definition": "The largest land animals, with long trunks and tusks.",
+          "partOfSpeech": "noun",
+          "example": "Elephants are the largest land animals alive today."
+        },
+        {
+          "word": "trunks",
+          "definition": "The long, flexible nose of an elephant used for breathing, smelling, and grabbing things.",
+          "partOfSpeech": "noun",
+          "example": "Elephants have long trunks and ivory tusks."
+        },
+        {
+          "word": "ivory",
+          "definition": "A hard, white material from elephant tusks, often used for carvings.",
+          "partOfSpeech": "noun",
+          "example": "Elephants have long trunks and ivory tusks."
+        },
+        {
+          "word": "tusks",
+          "definition": "Long, pointed teeth that stick out from the mouths of animals like elephants.",
+          "partOfSpeech": "noun",
+          "example": "Elephants have long trunks and ivory tusks."
+        },
+        {
+          "word": "grasslands",
+          "definition": "Large areas covered with grass, where few trees grow.",
+          "partOfSpeech": "noun",
+          "example": "They live in grasslands and forests."
+        },
+        {
+          "word": "snow leopards",
+          "definition": "Big cats that live in cold mountains and have thick fur.",
+          "partOfSpeech": "noun",
+          "example": "Snow leopards live on cold mountains."
+        },
+        {
+          "word": "fur",
+          "definition": "The thick, soft hair that covers the bodies of many animals.",
+          "partOfSpeech": "noun",
+          "example": "They have thick fur to stay warm."
+        }
+      ],
+      "discussion": [
+        {
+          "question": "Why do you think snow leopards need thick fur, while giraffes have spots?",
+          "analysis": "This encourages kids to think about how animals adapt to their environments. Snow leopards have thick fur to stay warm in cold mountains, while giraffes' spots help them blend into the savanna to hide from predators. Parents can guide children to connect physical features with survival needs."
+        },
+        {
+          "question": "How are elephants and elk similar or different in how they use their body parts?",
+          "analysis": "This promotes comparison skills. Both have special body parts: elk use antlers for fighting or showing off, and elephants use trunks for eating and drinking. Differences include elephants having tusks for digging or defense, while elk are fast swimmers. Parents can help kids list traits and discuss their purposes."
         }
       ]
     }
