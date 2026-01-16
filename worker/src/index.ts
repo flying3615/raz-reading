@@ -226,7 +226,7 @@ async function analyzeReading(request: Request, env: Env): Promise<Response> {
         const systemPrompt = `You are a friendly and encouraging English teacher. 
         Your student just read a passage aloud. I will provide you with the text they spoke (transcribed from audio).
         
-        Please provide feedback in the following JSON format:
+        Please provide feedback in the following STRICT JSON format only. Do not add any markdown formatting or introductory text.
         {
             "score": number (0-100),
             "feedback": "string (1-2 sentences of encouraging feedback)",
@@ -243,21 +243,27 @@ async function analyzeReading(request: Request, env: Env): Promise<Response> {
         });
 
         // 尝试解析 JSON，如果 AI 返回了额外文本，尝试提取 JSON 部分
-        let result = { score: 0, feedback: "Analysis failed", pronunciation_issues: [] };
+        let result = { score: 0, feedback: "Analysis failed", pronunciation_issues: [] as string[] };
         // @ts-ignore
         const aiRawResponse = response.response;
 
         try {
-            // 简单的 JSON 提取逻辑
-            const jsonMatch = aiRawResponse.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                result = JSON.parse(jsonMatch[0]);
+            // 更稳健的 JSON 提取逻辑
+            const start = aiRawResponse.indexOf('{');
+            const end = aiRawResponse.lastIndexOf('}');
+
+            if (start !== -1 && end !== -1) {
+                const jsonStr = aiRawResponse.substring(start, end + 1);
+                result = JSON.parse(jsonStr);
             } else {
+                // 尝试直接解析
                 result = JSON.parse(aiRawResponse);
             }
         } catch (e) {
-            // 如果解析失败，回退到纯文本反馈
-            result.feedback = aiRawResponse;
+            console.error('JSON parsing failed:', e);
+            console.log('Raw response:', aiRawResponse);
+            // 如果解析失败，仍然尝试展示原始文本，但尽量干净
+            result.feedback = aiRawResponse.replace(/```json/g, '').replace(/```/g, '').trim();
             result.score = 70; // 默认分
         }
 

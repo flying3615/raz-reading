@@ -60,7 +60,7 @@ function ReaderPage() {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isPlayingPreview, setIsPlayingPreview] = useState(false);
 
-    const [analysisResult, setAnalysisResult] = useState<{ score: number; feedback: string } | null>(null);
+    const [analysisResult, setAnalysisResult] = useState<{ score: number; feedback: string; pronunciation_issues?: string[] } | null>(null);
 
     // Practice Content State
     const [practiceContent, setPracticeContent] = useState<{ quiz: any[], vocabulary: any[], discussion?: any[] } | null>(null);
@@ -122,7 +122,8 @@ function ReaderPage() {
             const result = await response.json();
             setAnalysisResult({
                 score: result.score,
-                feedback: result.feedback
+                feedback: result.feedback,
+                pronunciation_issues: result.pronunciation_issues
             });
 
             // Mark as recorded when analysis is successful
@@ -1127,45 +1128,104 @@ function ReaderPage() {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    background: 'rgba(0,0,0,0.8)',
+                    background: 'rgba(0,0,0,0.85)',
                     zIndex: 300,
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    padding: '20px'
+                    padding: '20px',
+                    backdropFilter: 'blur(5px)'
                 }}>
                     <div style={{
                         background: '#1e1e24',
-                        padding: '24px',
-                        borderRadius: '16px',
+                        padding: '0',
+                        borderRadius: '24px',
                         maxWidth: '500px',
                         width: '100%',
                         border: '1px solid rgba(255,255,255,0.1)',
-                        animation: 'fadeIn 0.3s ease'
+                        animation: 'fadeIn 0.3s ease',
+                        overflow: 'hidden',
+                        boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
                     }}>
-                        <h3 style={{ marginTop: 0, color: 'white', display: 'flex', justifyContent: 'space-between' }}>
-                            <span>🎉 Analysis Content</span>
-                            <span style={{ color: '#8b5cf6' }}>Score: {analysisResult.score}</span>
-                        </h3>
-                        <p style={{ color: 'rgba(255,255,255,0.8)', lineHeight: '1.6' }}>
-                            {analysisResult.feedback}
-                        </p>
-                        <button
-                            onClick={() => setAnalysisResult(null)}
-                            style={{
-                                width: '100%',
-                                marginTop: '20px',
-                                padding: '12px',
-                                background: 'white',
-                                color: 'black',
-                                border: 'none',
-                                borderRadius: '8px',
-                                fontWeight: 600,
-                                cursor: 'pointer'
-                            }}
-                        >
-                            Close
-                        </button>
+                        {/* Header with Score */}
+                        <div style={{
+                            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                            padding: '25px 30px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                        }}>
+                            <div>
+                                <h3 style={{ margin: 0, color: 'white', fontSize: '1.4rem' }}>🎉 Analysis Result</h3>
+                                <div style={{ color: 'rgba(255,255,255,0.8)', marginTop: '4px', fontSize: '0.9rem' }}>Great job reading!</div>
+                            </div>
+                            <div style={{
+                                background: 'rgba(255,255,255,0.2)',
+                                backdropFilter: 'blur(10px)',
+                                borderRadius: '16px',
+                                padding: '8px 16px',
+                                textAlign: 'center',
+                                border: '1px solid rgba(255,255,255,0.3)'
+                            }}>
+                                <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.9)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>Score</div>
+                                <div style={{ fontSize: '1.8rem', color: 'white', fontWeight: 700, lineHeight: 1 }}>{analysisResult.score}</div>
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <div style={{ padding: '30px' }}>
+                            {/* Feedback Section */}
+                            <div style={{ marginBottom: '25px' }}>
+                                <h4 style={{ color: '#a5b4fc', margin: '0 0 10px 0', fontSize: '1rem' }}>📝 Feedback</h4>
+                                <p style={{ color: 'rgba(255,255,255,0.9)', lineHeight: '1.6', fontSize: '1.05rem', margin: 0 }}>
+                                    {analysisResult.feedback}
+                                </p>
+                            </div>
+
+                            {/* Pronunciation Issues Section */}
+                            {analysisResult.pronunciation_issues && analysisResult.pronunciation_issues.length > 0 && (
+                                <div>
+                                    <h4 style={{ color: '#fda4af', margin: '0 0 10px 0', fontSize: '1rem' }}>🎯 Words to Practice</h4>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                        {analysisResult.pronunciation_issues.map((word, idx) => (
+                                            <span key={idx} style={{
+                                                background: 'rgba(251, 113, 133, 0.15)',
+                                                border: '1px solid rgba(251, 113, 133, 0.3)',
+                                                color: '#fda4af',
+                                                padding: '6px 14px',
+                                                borderRadius: '20px',
+                                                fontSize: '0.95rem',
+                                                fontWeight: 500
+                                            }}>
+                                                {word}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <button
+                                onClick={() => setAnalysisResult(null)}
+                                style={{
+                                    width: '100%',
+                                    marginTop: '30px',
+                                    padding: '14px',
+                                    background: 'var(--bg-secondary)', // Fallback if var not set, will be dark
+                                    backgroundColor: '#2d2d38',
+                                    color: 'white',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '12px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    fontSize: '1rem',
+                                    transition: 'background 0.2s'
+                                }}
+                                onMouseOver={(e) => e.currentTarget.style.background = '#3f3f4e'}
+                                onMouseOut={(e) => e.currentTarget.style.background = '#2d2d38'}
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
