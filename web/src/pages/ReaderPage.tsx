@@ -971,8 +971,10 @@ function ReaderPage() {
 
                         <div style={{ padding: '20px', overflowY: 'auto', flex: 1, display: 'flex', gap: '20px', flexDirection: 'column' }}>
                             {/* Stats / Vocab Section */}
-                            <div>
-                                <h3 style={{ color: '#a5b4fc', marginBottom: '15px' }}>📚 Key Vocabulary</h3>
+                            <details open>
+                                <summary style={{ cursor: 'pointer', outline: 'none', marginBottom: '15px', color: '#a5b4fc', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                                    📚 Key Vocabulary
+                                </summary>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
                                     {practiceContent.vocabulary.map((vocab, idx) => (
                                         <div key={idx} style={{
@@ -1007,11 +1009,13 @@ function ReaderPage() {
                                         </div>
                                     ))}
                                 </div>
-                            </div>
+                            </details>
 
                             {/* Quiz Section */}
-                            <div>
-                                <h3 style={{ color: '#fda4af', marginBottom: '15px' }}>📝 Quick Quiz</h3>
+                            <details>
+                                <summary style={{ cursor: 'pointer', outline: 'none', marginBottom: '15px', color: '#fda4af', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                                    📝 Quick Quiz
+                                </summary>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                     {practiceContent.quiz.map((q, idx) => (
                                         <div key={idx} style={{
@@ -1055,13 +1059,15 @@ function ReaderPage() {
                                         </div>
                                     ))}
                                 </div>
-                            </div>
+                            </details>
                         </div>
 
                         {/* Discussion Section */}
                         {practiceContent.discussion && practiceContent.discussion.length > 0 && (
-                            <div style={{ marginTop: '30px', paddingBottom: '20px' }}>
-                                <h3 style={{ color: '#c084fc', marginBottom: '15px' }}>🗣️ Discussion</h3>
+                            <details>
+                                <summary style={{ cursor: 'pointer', outline: 'none', marginBottom: '15px', color: '#c084fc', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                                    🗣️ Discussion
+                                </summary>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                     {practiceContent.discussion.map((item, idx) => (
                                         <div key={idx} style={{
@@ -1114,7 +1120,7 @@ function ReaderPage() {
                                         </div>
                                     ))}
                                 </div>
-                            </div>
+                            </details>
                         )}
                     </div>
                 </div>
