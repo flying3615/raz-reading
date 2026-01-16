@@ -82,7 +82,16 @@ function ReaderPage() {
             });
 
             if (!response.ok) {
-                throw new Error('Analysis request failed');
+                const errText = await response.text();
+                console.error('API Error Response:', errText);
+                let errMsg = 'Analysis request failed';
+                try {
+                    const errJson = JSON.parse(errText);
+                    if (errJson.error) errMsg = errJson.error;
+                } catch (e) {
+                    errMsg = errText || errMsg;
+                }
+                throw new Error(errMsg);
             }
 
             const result = await response.json();
@@ -95,9 +104,9 @@ function ReaderPage() {
             if (bookId) {
                 markRecorded(bookId);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Analysis failed:', error);
-            alert('Oh no! Analysis failed. Please try again.');
+            alert(`Analysis failed: ${error.message || 'Unknown error'}`);
         } finally {
             setIsAnalyzing(false);
         }
