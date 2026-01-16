@@ -13,7 +13,14 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 function ReaderPage() {
     const { level, bookId } = useParams<{ level: string; bookId: string }>();
     const navigate = useNavigate();
-    const { getBookProgress, updateCurrentPage, addReadingTime, markAsCompleted } = useProgress();
+    const {
+        updateCurrentPage,
+        addReadingTime,
+        markAsCompleted,
+        markRecorded,
+        markPracticed,
+        getBookProgress
+    } = useProgress();
 
     const pdfWrapperRef = useRef<HTMLDivElement>(null);
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
@@ -82,6 +89,11 @@ function ReaderPage() {
                 score: result.score,
                 feedback: result.feedback
             });
+
+            // Mark as recorded when analysis is successful
+            if (bookId) {
+                markRecorded(bookId);
+            }
         } catch (error) {
             console.error('Analysis failed:', error);
             alert('Oh no! Analysis failed. Please try again.');
@@ -856,9 +868,15 @@ function ReaderPage() {
                             <span>🎙️ Recording</span>
                         </button>
 
+                        {/* Practice button */}
                         {practiceContent && (
                             <button
-                                onClick={() => setShowPractice(!showPractice)}
+                                onClick={() => {
+                                    setShowPractice(!showPractice);
+                                    if (bookId && !showPractice) {
+                                        markPracticed(bookId);
+                                    }
+                                }}
                                 style={{
                                     background: showPractice ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.08)',
                                     border: showPractice ? '1px solid rgba(16, 185, 129, 0.5)' : '1px solid rgba(255,255,255,0.1)',
@@ -880,29 +898,61 @@ function ReaderPage() {
                     </div>
 
                     {/* Mark complete button */}
-                    <button
-                        onClick={handleMarkComplete}
-                        disabled={isCompleted}
-                        title={isCompleted ? 'Completed' : 'Mark as completed'}
-                        style={{
-                            background: isCompleted
-                                ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-                                : 'rgba(255,255,255,0.08)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '8px',
-                            padding: '6px 12px',
-                            color: 'white',
-                            cursor: isCompleted ? 'default' : 'pointer',
-                            fontSize: '0.8rem',
-                            fontWeight: 500,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        {isCompleted ? '✓ Completed' : '📚 Mark Complete'}
-                    </button>
+                    {(() => {
+                        const currentProgress = bookId ? getBookProgress(bookId) : undefined;
+                        const hasRecorded = currentProgress?.hasRecorded;
+                        const hasPracticed = currentProgress?.hasPracticed;
+                        const hasQuizContent = !!practiceContent;
+
+                        // Condition: Must record. If quiz content exists, must also practice.
+                        const canComplete = hasRecorded && (!hasQuizContent || hasPracticed);
+
+                        return (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {/* Status Indicators */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.6rem', color: 'rgba(255,255,255,0.6)', marginRight: '4px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: hasRecorded ? 1 : 0.5 }}>
+                                        <span>🎙️</span> {hasRecorded ? 'Done' : 'ToDo'}
+                                    </div>
+                                    {hasQuizContent && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: hasPracticed ? 1 : 0.5 }}>
+                                            <span>🧠</span> {hasPracticed ? 'Done' : 'ToDo'}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <button
+                                    onClick={handleMarkComplete}
+                                    disabled={!canComplete || isCompleted}
+                                    title={
+                                        isCompleted ? 'Completed' :
+                                            !canComplete ? 'Complete Recording & Practice to unlock' :
+                                                'Mark as completed'
+                                    }
+                                    style={{
+                                        background: isCompleted
+                                            ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                                            : canComplete
+                                                ? 'rgba(255,255,255,0.15)'
+                                                : 'rgba(255,255,255,0.05)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '8px',
+                                        padding: '6px 12px',
+                                        color: canComplete ? 'white' : 'rgba(255,255,255,0.3)',
+                                        cursor: (canComplete && !isCompleted) ? 'pointer' : 'default',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 500,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    {isCompleted ? '✓ Completed' : canComplete ? '📚 Mark Complete' : '🔒 Locked'}
+                                </button>
+                            </div>
+                        );
+                    })()}
                 </div>
             </div>
 

@@ -13,6 +13,8 @@ export interface BookProgress {
     completedAt?: string;
     currentPage: number;
     totalPages: number;
+    hasRecorded?: boolean;
+    hasPracticed?: boolean;
 }
 
 export interface ReadingProgress {
@@ -28,6 +30,8 @@ interface ProgressContextType {
     addReadingTime: (bookId: string, seconds: number) => void;
     updateCurrentPage: (bookId: string, level: string, title: string, page: number, totalPages: number) => void;
     markAsCompleted: (bookId: string, level: string, title: string) => void;
+    markRecorded: (bookId: string) => void;
+    markPracticed: (bookId: string) => void;
     getLevelStats: (level: string) => { completed: number; reading: number; total: number };
     getRecentBooks: (limit?: number) => BookProgress[];
     resetProgress: () => void;
@@ -166,6 +170,42 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         updateBookStatus(bookId, level, title, 'completed');
     }, [updateBookStatus]);
 
+    const markRecorded = useCallback((bookId: string) => {
+        const current = progressRef.current;
+        const existing = current.books[bookId];
+        if (!existing) return;
+
+        const newProgress = {
+            ...current,
+            books: {
+                ...current.books,
+                [bookId]: {
+                    ...existing,
+                    hasRecorded: true
+                }
+            }
+        };
+        saveProgress(newProgress);
+    }, [saveProgress]);
+
+    const markPracticed = useCallback((bookId: string) => {
+        const current = progressRef.current;
+        const existing = current.books[bookId];
+        if (!existing) return;
+
+        const newProgress = {
+            ...current,
+            books: {
+                ...current.books,
+                [bookId]: {
+                    ...existing,
+                    hasPracticed: true
+                }
+            }
+        };
+        saveProgress(newProgress);
+    }, [saveProgress]);
+
     const getLevelStats = useCallback((level: string) => {
         const books = Object.values(progressRef.current.books).filter(b => b.level === level);
         return {
@@ -193,6 +233,8 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
             addReadingTime,
             updateCurrentPage,
             markAsCompleted,
+            markRecorded,
+            markPracticed,
             getLevelStats,
             getRecentBooks,
             resetProgress
