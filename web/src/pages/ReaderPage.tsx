@@ -48,6 +48,7 @@ function ReaderPage() {
 
     // Recording & Analysis State
     const [showRecorder, setShowRecorder] = useState(false);
+    const [recorderPos, setRecorderPos] = useState<'bottom' | 'top'>('bottom');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const [analysisResult, setAnalysisResult] = useState<{ score: number; feedback: string } | null>(null);
@@ -965,16 +966,43 @@ function ReaderPage() {
             />
 
             {/* Recording Modal/Overlay */}
+            {/* Recording Modal/Overlay */}
             {showRecorder && (
                 <div style={{
                     position: 'absolute',
-                    bottom: '80px',
+                    bottom: recorderPos === 'bottom' ? '80px' : 'auto',
+                    top: recorderPos === 'top' ? '80px' : 'auto',
                     left: '50%',
                     transform: 'translateX(-50%)',
                     zIndex: 200,
                     width: '90%',
-                    maxWidth: '400px'
+                    maxWidth: '400px',
+                    transition: 'all 0.3s ease'
                 }}>
+                    {/* Position Toggle Button */}
+                    <button
+                        onClick={() => setRecorderPos(p => p === 'bottom' ? 'top' : 'bottom')}
+                        style={{
+                            position: 'absolute',
+                            right: '10px',
+                            top: '-30px',
+                            background: 'rgba(0,0,0,0.6)',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            color: 'white',
+                            borderRadius: '20px',
+                            padding: '4px 12px',
+                            fontSize: '0.8rem',
+                            cursor: 'pointer',
+                            zIndex: 210,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            backdropFilter: 'blur(4px)'
+                        }}
+                    >
+                        {recorderPos === 'bottom' ? '⬆️ Move Top' : '⬇️ Move Bottom'}
+                    </button>
+
                     <AudioRecorder
                         onAnalysisStart={handleAnalysisStart}
                         isAnalyzing={isAnalyzing}
