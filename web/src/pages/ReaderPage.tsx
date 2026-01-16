@@ -4,7 +4,7 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import { type Book, API_BASE } from '../types';
 import booksData from '../data/books.json';
 import { useProgress } from '../contexts/ProgressContext';
-import { AudioRecorder } from '../components/AudioRecorder';
+import { useAudioRecorder } from '../hooks/useAudioRecorder';
 import booksContentData from '../data/books-content.json';
 
 
@@ -22,6 +22,15 @@ function ReaderPage() {
         getBookProgress
     } = useProgress();
 
+    // Recorder Hook
+    const {
+        isRecording,
+        recordingTime,
+        audioBlob,
+        startRecording,
+        stopRecording
+    } = useAudioRecorder();
+
     const pdfWrapperRef = useRef<HTMLDivElement>(null);
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
     const [pageDimension, setPageDimension] = useState<{ width?: number; height?: number }>({});
@@ -36,20 +45,20 @@ function ReaderPage() {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
-    const [volume, setVolume] = useState(1);
     const [playbackRate, setPlaybackRate] = useState(1.0);
-    const [showSpeedMenu, setShowSpeedMenu] = useState(false);
     const audioRef = useRef<HTMLAudioElement>(null);
+    const [showSpeedMenu, setShowSpeedMenu] = useState(false);
 
     const [book, setBook] = useState<Book | null>(null);
     const [isCompleted, setIsCompleted] = useState(false);
     const [viewMode, setViewMode] = useState<'auto' | 'single' | 'double'>('auto');
     const [isTwoPageMode, setIsTwoPageMode] = useState(false);
 
-    // Recording & Analysis State
+    // Recorder UI State
     const [showRecorder, setShowRecorder] = useState(false);
-    const [recorderPos, setRecorderPos] = useState<'bottom' | 'top'>('bottom');
+    // recorderPos is no longer needed as it's integrated in bottom bar
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [isPlayingPreview, setIsPlayingPreview] = useState(false);
 
     const [analysisResult, setAnalysisResult] = useState<{ score: number; feedback: string } | null>(null);
 
@@ -69,6 +78,22 @@ function ReaderPage() {
             }
         }
     }, [level, bookId]);
+
+    // Helpers for timer
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const handlePlayPreview = useCallback(() => {
+        if (!audioBlob) return;
+        const url = URL.createObjectURL(audioBlob);
+        const audio = new Audio(url);
+        setIsPlayingPreview(true);
+        audio.play();
+        audio.onended = () => setIsPlayingPreview(false);
+    }, [audioBlob]);
 
     const handleAnalysisStart = async (audioBlob: Blob) => {
         setIsAnalyzing(true);
@@ -459,13 +484,7 @@ function ReaderPage() {
         audioRef.current.currentTime = percentage * duration;
     };
 
-    const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newVolume = parseFloat(e.target.value);
-        setVolume(newVolume);
-        if (audioRef.current) {
-            audioRef.current.volume = newVolume;
-        }
-    };
+
 
     const setSpeed = (rate: number) => {
         setPlaybackRate(rate);
@@ -475,11 +494,7 @@ function ReaderPage() {
         setShowSpeedMenu(false);
     };
 
-    const formatTime = (time: number) => {
-        const minutes = Math.floor(time / 60);
-        const seconds = Math.floor(time % 60);
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    };
+
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -552,345 +567,277 @@ function ReaderPage() {
                 {renderPdfContent()}
             </div>
 
-            {/* 美化版控制栏 - Neumorphic Style */}
+            {/* Bottom Control Bar */}
             <div style={{
-                background: 'var(--bg-primary)',
-                borderRadius: '20px', // More rounded for Neumorphism
-                overflow: 'visible',
-                position: 'relative',
-                zIndex: 100,
-                boxShadow: 'var(--shadow-neu-flat)', // Neumorphic float
-                border: '1px solid rgba(255,255,255,0.02)',
-                marginTop: '1rem',
-                marginBottom: '0.5rem'
+                height: '80px',
+                background: '#1e1e24',
+                borderTop: '1px solid rgba(255,255,255,0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 20px',
+                gap: '20px',
+                zIndex: 100
             }}>
-                {/* 进度条区域 - 增大点击区域 */}
-                <div
-                    onClick={handleProgressClick}
-                    style={{
-                        height: '16px',
-                        padding: '6px 12px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center'
-                    }}
-                >
-                    <div style={{
-                        flex: 1,
-                        height: '4px',
-                        background: 'rgba(255,255,255,0.15)',
-                        borderRadius: '2px',
-                        position: 'relative',
-                        overflow: 'visible'
-                    }}>
-                        {/* 已播放进度 */}
+                {showRecorder ? (
+                    // --- Recorder Mode UI ---
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', width: '100%', justifyContent: 'space-between' }}>
+                        {/* Left: Exit Recorder Mode */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                            <button
+                                onClick={() => setShowRecorder(false)}
+                                style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: 'rgba(255,255,255,0.6)',
+                                    cursor: 'pointer',
+                                    fontSize: '1.2rem',
+                                    padding: '8px',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'all 0.2s'
+                                }}
+                                title="Back to Player"
+                            >
+                                ✕
+                            </button>
+                            <div style={{ color: 'white', fontWeight: 600, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                🎙️ Recorder
+                            </div>
+                        </div>
+
+                        {/* Center: Timer & Status */}
                         <div style={{
-                            height: '100%',
-                            background: 'linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%)',
-                            borderRadius: '2px',
-                            width: duration ? `${(currentTime / duration) * 100}%` : '0%',
-                            transition: 'width 0.1s linear',
-                            boxShadow: '0 0 8px rgba(99, 102, 241, 0.5)'
-                        }} />
-                        {/* 拖动圆点 */}
-                        <div style={{
-                            position: 'absolute',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            left: duration ? `calc(${(currentTime / duration) * 100}% - 7px)` : '-7px',
-                            width: '14px',
-                            height: '14px',
-                            background: 'white',
-                            borderRadius: '50%',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                            transition: 'left 0.1s linear'
-                        }} />
-                    </div>
-                </div>
-
-                {/* Control buttons row */}
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '8px 12px 10px',
-                    gap: '12px'
-                }}>
-                    {/* Back button */}
-                    <button
-                        onClick={() => navigate(-1)}
-                        style={{
-                            background: 'var(--bg-primary)',
-                            border: 'none',
-                            borderRadius: '10px',
-                            width: '40px', // Slightly larger
-                            height: '40px',
-                            color: 'var(--text-secondary)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '1.2rem',
-                            transition: 'all 0.2s',
-                            boxShadow: 'var(--shadow-neu-sm)'
-                        }}
-                    >
-                        ←
-                    </button>
-
-                    {/* Title */}
-                    <span style={{
-                        color: 'white',
-                        fontSize: '0.95rem',
-                        fontWeight: 600,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        maxWidth: '160px'
-                    }}>
-                        {book?.title || 'Loading...'}
-                    </span>
-
-                    {/* Separator */}
-                    <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)' }} />
-
-                    {/* Page navigation controls */}
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        background: 'var(--bg-primary)',
-                        borderRadius: '12px',
-                        padding: '6px 12px',
-                        gap: '10px',
-                        boxShadow: 'var(--shadow-neu-pressed)'
-                    }}>
-                        <button
-                            onClick={goToPrevPage}
-                            disabled={pageNumber <= 1}
-                            style={{
-                                background: 'transparent',
-                                border: 'none',
-                                color: pageNumber <= 1 ? 'rgba(255,255,255,0.3)' : 'white',
-                                cursor: pageNumber <= 1 ? 'not-allowed' : 'pointer',
-                                fontSize: '0.9rem',
-                                padding: '2px 6px'
-                            }}
-                        >
-                            ◀
-                        </button>
-                        <span style={{
-                            color: 'white',
-                            fontSize: '0.85rem',
-                            fontWeight: 500,
-                            minWidth: '42px',
+                            fontFamily: 'monospace',
+                            fontSize: '1.5rem',
+                            color: isRecording ? '#ef4444' : 'white',
+                            fontWeight: 700,
+                            minWidth: '80px',
                             textAlign: 'center'
                         }}>
-                            {pageNumber} / {numPages}
-                        </span>
-                        <button
-                            onClick={goToNextPage}
-                            disabled={pageNumber >= numPages}
-                            style={{
-                                background: 'transparent',
-                                border: 'none',
-                                color: pageNumber >= numPages ? 'rgba(255,255,255,0.3)' : 'white',
-                                cursor: pageNumber >= numPages ? 'not-allowed' : 'pointer',
-                                fontSize: '0.9rem',
-                                padding: '2px 6px'
-                            }}
-                        >
-                            ▶
-                        </button>
-                    </div>
+                            {formatTime(recordingTime)}
+                        </div>
 
-                    {/* 分隔符 */}
-                    <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)' }} />
+                        {/* Right: Controls */}
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                            {!isRecording && !audioBlob && (
+                                <button
+                                    onClick={startRecording}
+                                    disabled={isAnalyzing}
+                                    style={{
+                                        background: '#ef4444',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '10px 24px',
+                                        borderRadius: '24px',
+                                        cursor: 'pointer',
+                                        fontWeight: 600,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        fontSize: '1rem'
+                                    }}
+                                >
+                                    <span>●</span> Start Recording
+                                </button>
+                            )}
 
-                    {/* 播放/暂停 */}
-                    <button
-                        onClick={togglePlay}
-                        disabled={!audioUrl}
-                        title={!audioUrl ? '此书籍暂无音频' : undefined}
-                        style={{
-                            background: audioUrl
-                                ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
-                                : 'rgba(255,255,255,0.1)',
-                            border: 'none',
-                            borderRadius: '50%',
-                            width: '36px',
-                            height: '36px',
-                            color: audioUrl ? 'white' : 'rgba(255,255,255,0.3)',
-                            cursor: audioUrl ? 'pointer' : 'not-allowed',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '1rem',
-                            boxShadow: audioUrl ? '0 2px 10px rgba(99, 102, 241, 0.4)' : 'none',
-                            transition: 'transform 0.2s'
-                        }}
-                    >
-                        {isPlaying ? '⏸' : '▶'}
-                    </button>
+                            {isRecording && (
+                                <button
+                                    onClick={stopRecording}
+                                    style={{
+                                        background: 'rgba(255,255,255,0.1)',
+                                        border: '1px solid rgba(255,255,255,0.2)',
+                                        color: 'white',
+                                        padding: '10px 24px',
+                                        borderRadius: '24px',
+                                        cursor: 'pointer',
+                                        fontWeight: 600,
+                                        fontSize: '1rem'
+                                    }}
+                                >
+                                    ⏹ Stop
+                                </button>
+                            )}
 
-                    {/* 音量 */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>🔊</span>
-                        <input
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="0.05"
-                            value={volume}
-                            onChange={handleVolumeChange}
-                            style={{
-                                width: '50px',
-                                height: '4px',
-                                accentColor: '#6366f1',
-                                cursor: 'pointer'
-                            }}
-                        />
-                    </div>
-
-                    {/* 时间 */}
-                    <div style={{
-                        color: 'rgba(255,255,255,0.6)',
-                        fontSize: '0.8rem',
-                        fontFamily: 'monospace'
-                    }}>
-                        {formatTime(currentTime)} / {formatTime(duration)}
-                    </div>
-
-                    {/* 弹性空间 */}
-                    <div style={{ flex: 1 }} />
-
-                    {/* 倍速 */}
-                    <div style={{ position: 'relative' }}>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); setShowSpeedMenu(!showSpeedMenu); }}
-                            style={{
-                                background: playbackRate !== 1.0 ? 'rgba(99, 102, 241, 0.3)' : 'rgba(255,255,255,0.08)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                color: 'white',
-                                padding: '5px 10px',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                                fontSize: '0.8rem',
-                                fontWeight: 500,
-                                transition: 'all 0.2s'
-                            }}
-                        >
-                            {playbackRate}x
-                        </button>
-
-                        {showSpeedMenu && (
-                            <div
-                                onClick={(e) => e.stopPropagation()}
-                                style={{
-                                    position: 'absolute',
-                                    bottom: '100%',
-                                    right: 0,
-                                    marginBottom: '10px',
-                                    background: 'rgba(20, 20, 25, 0.98)',
-                                    borderRadius: '10px',
-                                    padding: '8px 0',
-                                    minWidth: '110px',
-                                    boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    zIndex: 1000
-                                }}
-                            >
-                                <div style={{
-                                    padding: '6px 14px 8px',
-                                    color: 'rgba(255,255,255,0.5)',
-                                    fontSize: '0.7rem',
-                                    fontWeight: 600,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px',
-                                    borderBottom: '1px solid rgba(255,255,255,0.08)'
-                                }}>
-                                    Playback Speed
-                                </div>
-                                {speedOptions.map(rate => (
+                            {!isRecording && audioBlob && (
+                                <>
                                     <button
-                                        key={rate}
-                                        onClick={() => setSpeed(rate)}
+                                        onClick={handlePlayPreview}
+                                        disabled={isPlayingPreview || isAnalyzing}
                                         style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            width: '100%',
-                                            padding: '8px 14px',
-                                            background: playbackRate === rate ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
-                                            border: 'none',
-                                            color: playbackRate === rate ? '#a5b4fc' : 'white',
-                                            fontSize: '0.85rem',
+                                            background: 'rgba(255,255,255,0.1)',
+                                            border: '1px solid rgba(255,255,255,0.2)',
+                                            color: 'white',
+                                            padding: '8px 20px',
+                                            borderRadius: '20px',
                                             cursor: 'pointer',
-                                            transition: 'background 0.15s'
+                                            fontSize: '0.9rem'
                                         }}
                                     >
-                                        <span>{rate === 1.0 ? 'Normal' : `${rate}x`}</span>
-                                        {playbackRate === rate && <span style={{ color: '#6366f1' }}>✓</span>}
+                                        {isPlayingPreview ? '🔊 Playing...' : '▶ Preview'}
                                     </button>
-                                ))}
-                            </div>
-                        )}
+
+                                    <button
+                                        onClick={startRecording} // Re-record
+                                        disabled={isAnalyzing}
+                                        style={{
+                                            background: 'transparent',
+                                            border: '1px solid rgba(255,255,255,0.2)',
+                                            color: 'rgba(255,255,255,0.7)',
+                                            padding: '8px 20px',
+                                            borderRadius: '20px',
+                                            cursor: 'pointer',
+                                            fontSize: '0.9rem'
+                                        }}
+                                    >
+                                        Re-record
+                                    </button>
+
+                                    <button
+                                        onClick={() => handleAnalysisStart(audioBlob)}
+                                        disabled={isAnalyzing}
+                                        style={{
+                                            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                                            border: 'none',
+                                            color: 'white',
+                                            padding: '10px 24px',
+                                            borderRadius: '24px',
+                                            cursor: isAnalyzing ? 'wait' : 'pointer',
+                                            fontWeight: 600,
+                                            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)',
+                                            fontSize: '1rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px'
+                                        }}
+                                    >
+                                        {isAnalyzing ? 'Analyzing...' : '✨ AI Feedback'}
+                                    </button>
+                                </>
+                            )}
+                        </div>
                     </div>
-
-                    {/* View mode toggle */}
-                    <button
-                        onClick={() => setViewMode(prev => prev === 'double' ? 'single' : 'double')}
-                        style={{
-                            background: viewMode !== 'auto' ? 'rgba(99, 102, 241, 0.3)' : 'rgba(255,255,255,0.08)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            color: 'white',
-                            padding: '5px 10px',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            fontSize: '0.8rem',
-                            fontWeight: 500,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        {isTwoPageMode ? '📖 Double' : '📄 Single'}
-                    </button>
-
-                    {/* Practice Mode Button */}
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                ) : (
+                    // --- Player Mode UI (Original) ---
+                    <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '12px' }}>
+                        {/* Back button */}
                         <button
-                            onClick={() => setShowRecorder(!showRecorder)}
+                            onClick={() => navigate(-1)}
                             style={{
-                                background: showRecorder ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.08)',
-                                border: showRecorder ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255,255,255,0.1)',
-                                color: showRecorder ? '#fca5a5' : 'white',
-                                padding: '6px 12px',
-                                borderRadius: '8px',
+                                background: 'var(--bg-primary)',
+                                border: 'none',
+                                borderRadius: '10px',
+                                width: '40px',
+                                height: '40px',
+                                color: 'var(--text-secondary)',
                                 cursor: 'pointer',
-                                fontSize: '0.9rem',
-                                fontWeight: 600,
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '6px',
-                                transition: 'all 0.2s'
+                                justifyContent: 'center',
+                                fontSize: '1.2rem',
+                                transition: 'all 0.2s',
+                                boxShadow: 'var(--shadow-neu-sm)'
                             }}
                         >
-                            <span>🎙️ Recording</span>
+                            ←
                         </button>
 
-                        {/* Practice button */}
-                        {practiceContent && (
-                            <button
-                                onClick={() => {
-                                    setShowPractice(!showPractice);
-                                    if (bookId && !showPractice) {
-                                        markPracticed(bookId);
-                                    }
-                                }}
+                        {/* Title */}
+                        <span style={{
+                            color: 'white',
+                            fontSize: '0.95rem',
+                            fontWeight: 600,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            maxWidth: '160px'
+                        }}>
+                            {book?.title || 'Loading...'}
+                        </span>
+
+                        <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)' }} />
+
+                        {/* Page Nav */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            background: 'var(--bg-primary)',
+                            borderRadius: '12px',
+                            padding: '6px 12px',
+                            gap: '10px',
+                            boxShadow: 'var(--shadow-neu-pressed)'
+                        }}>
+                            <button onClick={goToPrevPage} disabled={pageNumber <= 1} style={{ background: 'transparent', border: 'none', color: pageNumber <= 1 ? 'rgba(255,255,255,0.3)' : 'white', cursor: pageNumber <= 1 ? 'not-allowed' : 'pointer' }}>◀</button>
+                            <span style={{ color: 'white', fontSize: '0.85rem' }}>{pageNumber} / {numPages}</span>
+                            <button onClick={goToNextPage} disabled={pageNumber >= numPages} style={{ background: 'transparent', border: 'none', color: pageNumber >= numPages ? 'rgba(255,255,255,0.3)' : 'white', cursor: pageNumber >= numPages ? 'not-allowed' : 'pointer' }}>▶</button>
+                        </div>
+
+                        <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)' }} />
+
+                        {/* Play/Pause */}
+                        <button
+                            onClick={togglePlay}
+                            disabled={!audioUrl}
+                            style={{
+                                background: audioUrl ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : 'rgba(255,255,255,0.1)',
+                                border: 'none',
+                                borderRadius: '50%',
+                                width: '36px',
+                                height: '36px',
+                                color: audioUrl ? 'white' : 'rgba(255,255,255,0.3)',
+                                cursor: audioUrl ? 'pointer' : 'not-allowed',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            {isPlaying ? '⏸' : '▶'}
+                        </button>
+
+                        {/* Progress Bar Container - includes volume & time */}
+                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '4px' }}>
+                            <div
+                                onClick={handleProgressClick}
                                 style={{
-                                    background: showPractice ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.08)',
-                                    border: showPractice ? '1px solid rgba(16, 185, 129, 0.5)' : '1px solid rgba(255,255,255,0.1)',
-                                    color: showPractice ? '#6ee7b7' : 'white',
+                                    height: '20px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                <div style={{ flex: 1, height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', position: 'relative' }}>
+                                    <div style={{ width: duration ? `${(currentTime / duration) * 100}%` : '0%', height: '100%', background: '#6366f1', borderRadius: '2px' }} />
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
+                                <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+                                {/* Speed */}
+                                <button onClick={() => setShowSpeedMenu(!showSpeedMenu)} style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer' }}>{playbackRate}x</button>
+                                {showSpeedMenu && (
+                                    <div style={{ position: 'absolute', bottom: '100%', right: '20px', background: '#1e1e24', padding: '10px', borderRadius: '8px', zIndex: 1000 }}>
+                                        {speedOptions.map(rate => (
+                                            <div key={rate} onClick={() => setSpeed(rate)} style={{ padding: '4px 8px', cursor: 'pointer', color: rate === playbackRate ? '#6366f1' : 'white' }}>{rate}x</div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* View mode toggle */}
+                        <button onClick={() => setViewMode(prev => prev === 'double' ? 'single' : 'double')} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', padding: '4px 8px', borderRadius: '4px', color: 'white', fontSize: '0.8rem', cursor: 'pointer' }}>
+                            {isTwoPageMode ? '📖 Double' : '📄 Single'}
+                        </button>
+
+                        {/* Practice Mode Button */}
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                                onClick={() => setShowRecorder(true)}
+                                style={{
+                                    background: 'rgba(255,255,255,0.08)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    color: 'white',
                                     padding: '6px 12px',
                                     borderRadius: '8px',
                                     cursor: 'pointer',
@@ -902,68 +849,63 @@ function ReaderPage() {
                                     transition: 'all 0.2s'
                                 }}
                             >
-                                <span>🧠 Practice</span>
+                                <span>🎙️ Rec</span>
                             </button>
-                        )}
-                    </div>
 
-                    {/* Mark complete button */}
-                    {(() => {
-                        const currentProgress = bookId ? getBookProgress(bookId) : undefined;
-                        const hasRecorded = currentProgress?.hasRecorded;
-                        const hasPracticed = currentProgress?.hasPracticed;
-                        const hasQuizContent = !!practiceContent;
-
-                        // Condition: Must record. If quiz content exists, must also practice.
-                        const canComplete = hasRecorded && (!hasQuizContent || hasPracticed);
-
-                        return (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                {/* Status Indicators */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.6rem', color: 'rgba(255,255,255,0.6)', marginRight: '4px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: hasRecorded ? 1 : 0.5 }}>
-                                        <span>🎙️</span> {hasRecorded ? 'Done' : 'ToDo'}
-                                    </div>
-                                    {hasQuizContent && (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: hasPracticed ? 1 : 0.5 }}>
-                                            <span>🧠</span> {hasPracticed ? 'Done' : 'ToDo'}
-                                        </div>
-                                    )}
-                                </div>
-
+                            {/* Practice button */}
+                            {practiceContent && (
                                 <button
-                                    onClick={handleMarkComplete}
-                                    disabled={!canComplete || isCompleted}
-                                    title={
-                                        isCompleted ? 'Completed' :
-                                            !canComplete ? 'Complete Recording & Practice to unlock' :
-                                                'Mark as completed'
-                                    }
+                                    onClick={() => {
+                                        setShowPractice(!showPractice);
+                                        if (bookId && !showPractice) {
+                                            markPracticed(bookId);
+                                        }
+                                    }}
                                     style={{
-                                        background: isCompleted
-                                            ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-                                            : canComplete
-                                                ? 'rgba(255,255,255,0.15)'
-                                                : 'rgba(255,255,255,0.05)',
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        borderRadius: '8px',
+                                        background: showPractice ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.08)',
+                                        border: showPractice ? '1px solid rgba(16, 185, 129, 0.5)' : '1px solid rgba(255,255,255,0.1)',
+                                        color: showPractice ? '#6ee7b7' : 'white',
                                         padding: '6px 12px',
-                                        color: canComplete ? 'white' : 'rgba(255,255,255,0.3)',
-                                        cursor: (canComplete && !isCompleted) ? 'pointer' : 'default',
-                                        fontSize: '0.8rem',
-                                        fontWeight: 500,
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        fontSize: '0.9rem',
+                                        fontWeight: 600,
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '4px',
+                                        gap: '6px',
                                         transition: 'all 0.2s'
                                     }}
                                 >
-                                    {isCompleted ? '✓ Completed' : canComplete ? '📚 Mark Complete' : '🔒 Locked'}
+                                    <span>🧠 Practice</span>
                                 </button>
-                            </div>
-                        );
-                    })()}
-                </div>
+                            )}
+                        </div>
+
+                        {/* Mark complete status */}
+                        {(() => {
+                            const currentProgress = bookId ? getBookProgress(bookId) : undefined;
+                            const hasRecorded = currentProgress?.hasRecorded;
+                            const canComplete = hasRecorded && (!practiceContent || currentProgress?.hasPracticed);
+
+                            return (
+                                <button
+                                    onClick={handleMarkComplete}
+                                    disabled={!canComplete || isCompleted}
+                                    style={{
+                                        background: isCompleted ? '#059669' : canComplete ? 'rgba(255,255,255,0.15)' : 'transparent',
+                                        border: '1px solid rgba(255,255,255,0.2)',
+                                        padding: '6px',
+                                        borderRadius: '8px',
+                                        cursor: canComplete ? 'pointer' : 'default',
+                                        color: canComplete ? 'white' : 'rgba(255,255,255,0.3)'
+                                    }}
+                                >
+                                    {isCompleted ? '✓' : canComplete ? '📚' : '🔒'}
+                                </button>
+                            )
+                        })()}
+                    </div>
+                )}
             </div>
 
             <audio
@@ -973,51 +915,6 @@ function ReaderPage() {
                 onLoadedMetadata={handleLoadedMetadata}
                 onEnded={() => setIsPlaying(false)}
             />
-
-            {/* Recording Modal/Overlay */}
-            {/* Recording Modal/Overlay */}
-            {showRecorder && (
-                <div style={{
-                    position: 'absolute',
-                    bottom: recorderPos === 'bottom' ? '80px' : 'auto',
-                    top: recorderPos === 'top' ? '80px' : 'auto',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    zIndex: 200,
-                    width: '90%',
-                    maxWidth: '400px',
-                    transition: 'all 0.3s ease'
-                }}>
-                    {/* Position Toggle Button */}
-                    <button
-                        onClick={() => setRecorderPos(p => p === 'bottom' ? 'top' : 'bottom')}
-                        style={{
-                            position: 'absolute',
-                            right: '10px',
-                            top: '-30px',
-                            background: 'rgba(0,0,0,0.6)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            color: 'white',
-                            borderRadius: '20px',
-                            padding: '4px 12px',
-                            fontSize: '0.8rem',
-                            cursor: 'pointer',
-                            zIndex: 210,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            backdropFilter: 'blur(4px)'
-                        }}
-                    >
-                        {recorderPos === 'bottom' ? '⬆️ Move Top' : '⬇️ Move Bottom'}
-                    </button>
-
-                    <AudioRecorder
-                        onAnalysisStart={handleAnalysisStart}
-                        isAnalyzing={isAnalyzing}
-                    />
-                </div>
-            )}
 
             {/* Practice Content Modal */}
             {showPractice && practiceContent && (
