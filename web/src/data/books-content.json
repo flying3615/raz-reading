@@ -341,6 +341,315 @@
           "analysis": "This promotes comparison skills. Both have special body parts: elk use antlers for fighting or showing off, and elephants use trunks for eating and drinking. Differences include elephants having tusks for digging or defense, while elk are fast swimmers. Parents can help kids list traits and discuss their purposes."
         }
       ]
+    },
+    "4": {
+      "quiz": [
+        {
+          "question": "What did Anna and Oma make together?",
+          "options": [
+            "Cupcakes",
+            "A magic coat",
+            "A picnic basket"
+          ],
+          "correctAnswer": 0
+        },
+        {
+          "question": "What color was Opa's magic coat?",
+          "options": [
+            "Pink",
+            "Gray",
+            "Blue"
+          ],
+          "correctAnswer": 1
+        },
+        {
+          "question": "How did Anna get to the coat?",
+          "options": [
+            "She walked slowly",
+            "She ran quickly",
+            "She asked Oma to get it"
+          ],
+          "correctAnswer": 1
+        }
+      ],
+      "vocabulary": [
+        {
+          "word": "grandmothers",
+          "definition": "The mother of one's father or mother",
+          "partOfSpeech": "noun",
+          "example": "Anna looked out her grandmothers window."
+        },
+        {
+          "word": "clouds",
+          "definition": "White or gray masses in the sky made of tiny water drops",
+          "partOfSpeech": "noun",
+          "example": "Dark clouds piled up in the sky."
+        },
+        {
+          "word": "picnics",
+          "definition": "Meals eaten outdoors, often in a park or natural setting",
+          "partOfSpeech": "noun",
+          "example": "Rain and picnics are not so good."
+        },
+        {
+          "word": "cupcakes",
+          "definition": "Small individual cakes baked in paper cups",
+          "partOfSpeech": "noun",
+          "example": "Anna looked at the box of cupcakes with pink icing."
+        },
+        {
+          "word": "icing",
+          "definition": "Sweet sugary coating on cakes or cupcakes",
+          "partOfSpeech": "noun",
+          "example": "Cupcakes with pink icing."
+        },
+        {
+          "word": "tapped",
+          "definition": "To lightly touch or hit something",
+          "partOfSpeech": "verb",
+          "example": "Oma tapped her chin."
+        },
+        {
+          "word": "murmured",
+          "definition": "To speak very softly or quietly",
+          "partOfSpeech": "verb",
+          "example": "She murmured, 'I wonder if you could...'"
+        },
+        {
+          "word": "magic",
+          "definition": "Having special powers that can't be explained by science",
+          "partOfSpeech": "adjective",
+          "example": "Opa's magic coat."
+        },
+        {
+          "word": "lightning",
+          "definition": "A bright flash of light in the sky during a storm",
+          "partOfSpeech": "noun",
+          "example": "Quick as lightning, Anna ran to get the coat."
+        }
+      ],
+      "discussion": [
+        {
+          "question": "Why do you think Anna was worried about rain? What might happen to their plans?",
+          "analysis": "Anna was worried because rain could ruin their school picnic and the cupcakes they worked hard on. This shows she cares about special events and the things she creates with her grandmother. Parents can discuss how weather affects plans and how to adapt when things don't go as expected."
+        },
+        {
+          "question": "What do you think might be special about Opa's magic coat? What could it do?",
+          "analysis": "The story hints the coat might have special powers, possibly related to weather since it's 'gray as a cloud.' Children can use imagination to predict what might happen next. This encourages creative thinking and prediction skills based on story clues."
+        }
+      ]
+    },
+    "5": {
+      "quiz": [
+        {
+          "question": "When was Barack Obama elected president of the United States?",
+          "options": [
+            "November 2008",
+            "1961",
+            "When he was very young"
+          ],
+          "correctAnswer": 0
+        },
+        {
+          "question": "Where was Barack Obama born?",
+          "options": [
+            "Hawaii",
+            "An African country",
+            "A country in Asia"
+          ],
+          "correctAnswer": 0
+        },
+        {
+          "question": "What was Barack Obama's nickname when he was young?",
+          "options": [
+            "Barry",
+            "Barack Sr.",
+            "Ann"
+          ],
+          "correctAnswer": 0
+        }
+      ],
+      "vocabulary": [
+        {
+          "word": "president",
+          "definition": "The leader of a country.",
+          "partOfSpeech": "noun",
+          "example": "Barack Obama was elected president of the United States."
+        },
+        {
+          "word": "elected",
+          "definition": "Chosen by voting.",
+          "partOfSpeech": "verb",
+          "example": "He was elected president in November 2008."
+        },
+        {
+          "word": "country",
+          "definition": "A land with its own government and people.",
+          "partOfSpeech": "noun",
+          "example": "His father was from an African country."
+        },
+        {
+          "word": "poor",
+          "definition": "Having very little money or few things.",
+          "partOfSpeech": "adjective",
+          "example": "Many people there were very poor."
+        },
+        {
+          "word": "married",
+          "definition": "When two people become husband and wife.",
+          "partOfSpeech": "verb",
+          "example": "His mother married a man from a country in Asia."
+        }
+      ],
+      "discussion": [
+        {
+          "question": "Why do you think someone would want to be president, even though it is described as a 'big job'?",
+          "analysis": "Possible answers: To help people, to make the country better, to solve problems. This encourages kids to think about leadership and responsibility."
+        },
+        {
+          "question": "How do you think moving to a different country as a child might have helped Barack Obama understand different people?",
+          "analysis": "Possible answers: He saw how people live in different places, he learned about different cultures, he understood what it's like to be new somewhere. This helps kids think about empathy and diversity."
+        }
+      ]
+    },
+    "6": {
+      "quiz": [
+        {
+          "question": "What was Blackbeard's real name?",
+          "options": [
+            "Edward Teach",
+            "John Walker",
+            "Kate Follett"
+          ],
+          "correctAnswer": 0
+        },
+        {
+          "question": "Where was Blackbeard born?",
+          "options": [
+            "England",
+            "North Carolina",
+            "The Caribbean"
+          ],
+          "correctAnswer": 0
+        },
+        {
+          "question": "What did pirates do to ships?",
+          "options": [
+            "Attack and rob them",
+            "Help them sail safely",
+            "Build new ships for them"
+          ],
+          "correctAnswer": 0
+        }
+      ],
+      "vocabulary": [
+        {
+          "word": "pirate",
+          "definition": "A person who attacks and steals from ships at sea.",
+          "partOfSpeech": "noun",
+          "example": "Blackbeard was a famous pirate."
+        },
+        {
+          "word": "character",
+          "definition": "A person in a story, or someone with a special personality.",
+          "partOfSpeech": "noun",
+          "example": "Real pirates like Blackbeard were colorful characters."
+        },
+        {
+          "word": "cartoon",
+          "definition": "A drawing or animated film that tells a story in a funny way.",
+          "partOfSpeech": "noun",
+          "example": "Movie and cartoon pirates may look funny."
+        },
+        {
+          "word": "beard",
+          "definition": "The hair that grows on a man's chin and cheeks.",
+          "partOfSpeech": "noun",
+          "example": "Do you think of a cartoon pirate with a beard?"
+        },
+        {
+          "word": "patch",
+          "definition": "A small piece of material used to cover something, like an eye.",
+          "partOfSpeech": "noun",
+          "example": "Do you think of a cartoon pirate with an eye patch?"
+        },
+        {
+          "word": "parrot",
+          "definition": "A colorful bird that can sometimes copy human speech.",
+          "partOfSpeech": "noun",
+          "example": "Do you think of a cartoon pirate with a parrot?"
+        },
+        {
+          "word": "sail",
+          "definition": "To travel on water in a ship or boat.",
+          "partOfSpeech": "verb",
+          "example": "Real pirates did sail the seas."
+        },
+        {
+          "word": "crew",
+          "definition": "A group of people who work together on a ship or other place.",
+          "partOfSpeech": "noun",
+          "example": "Edward joined the crew of a ship."
+        },
+        {
+          "word": "navy",
+          "definition": "The part of a country's military that fights at sea.",
+          "partOfSpeech": "noun",
+          "example": "A ship that attacked enemy ships to help the English navy."
+        },
+        {
+          "word": "attack",
+          "definition": "To use force to try to hurt or defeat someone or something.",
+          "partOfSpeech": "verb",
+          "example": "They attacked so many other ships."
+        },
+        {
+          "word": "rob",
+          "definition": "To take something from someone by force or without permission.",
+          "partOfSpeech": "verb",
+          "example": "Pirates were very busy robbing ships."
+        },
+        {
+          "word": "coast",
+          "definition": "The land next to the sea or ocean.",
+          "partOfSpeech": "noun",
+          "example": "Along the coast and islands of the New World."
+        },
+        {
+          "word": "island",
+          "definition": "A piece of land surrounded by water.",
+          "partOfSpeech": "noun",
+          "example": "Along the coast and islands of the New World."
+        },
+        {
+          "word": "treasure",
+          "definition": "Valuable things like gold, jewels, or money that are hidden or collected.",
+          "partOfSpeech": "noun",
+          "example": "A small reward for the ships or treasure they took."
+        },
+        {
+          "word": "reward",
+          "definition": "Something given in return for good work or help.",
+          "partOfSpeech": "noun",
+          "example": "The hired sailors were paid a small reward."
+        },
+        {
+          "word": "dangerous",
+          "definition": "Not safe; could cause harm or injury.",
+          "partOfSpeech": "adjective",
+          "example": "It was dangerous work."
+        }
+      ],
+      "discussion": [
+        {
+          "question": "Why do you think Edward Teach decided to become a pirate instead of helping the English navy?",
+          "analysis": "This encourages kids to think about motivations and choices. Possible answers: Pirates could keep all the treasure for themselves, while navy sailors might get only a small reward; pirates had more freedom to attack any ship; or Edward might have wanted more adventure. Parents can discuss how people make decisions based on what they think is best for them, even if it's not the right choice."
+        },
+        {
+          "question": "How are cartoon pirates different from real pirates like Blackbeard?",
+          "analysis": "This helps kids compare fiction and reality. Cartoon pirates are often funny, have parrots and eye patches, and might seem silly, while real pirates were dangerous, attacked ships, and scared people. Parents can talk about how stories sometimes make things seem less serious than they really are, and why it's important to learn about real history."
+        }
+      ]
     }
   }
 }
