@@ -5,6 +5,8 @@ import { type Book, API_BASE } from '../types';
 import booksData from '../data/books.json';
 import { useProgress } from '../contexts/ProgressContext';
 import { AudioRecorder } from '../components/AudioRecorder';
+import booksContentData from '../data/books-content.json';
+
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -40,7 +42,25 @@ function ReaderPage() {
     // Recording & Analysis State
     const [showRecorder, setShowRecorder] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+
     const [analysisResult, setAnalysisResult] = useState<{ score: number; feedback: string } | null>(null);
+
+    // Practice Content State
+    const [practiceContent, setPracticeContent] = useState<{ quiz: any[], vocabulary: any[] } | null>(null);
+    const [showPractice, setShowPractice] = useState(false);
+
+    // Load practice content
+    useEffect(() => {
+        if (level && bookId) {
+            // @ts-ignore
+            const lvlContent = booksContentData[level];
+            if (lvlContent && lvlContent[bookId]) {
+                setPracticeContent(lvlContent[bookId]);
+            } else {
+                setPracticeContent(null);
+            }
+        }
+    }, [level, bookId]);
 
     const handleAnalysisStart = async (audioBlob: Blob) => {
         setIsAnalyzing(true);
@@ -815,25 +835,49 @@ function ReaderPage() {
                     </button>
 
                     {/* Practice Mode Button */}
-                    <button
-                        onClick={() => setShowRecorder(!showRecorder)}
-                        style={{
-                            background: showRecorder ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.08)',
-                            border: showRecorder ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255,255,255,0.1)',
-                            color: showRecorder ? '#fca5a5' : 'white',
-                            padding: '6px 12px',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            fontSize: '0.9rem',
-                            fontWeight: 600,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        <span>🎙️</span>
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                            onClick={() => setShowRecorder(!showRecorder)}
+                            style={{
+                                background: showRecorder ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.08)',
+                                border: showRecorder ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255,255,255,0.1)',
+                                color: showRecorder ? '#fca5a5' : 'white',
+                                padding: '6px 12px',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontSize: '0.9rem',
+                                fontWeight: 600,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            <span>🎙️ Recording</span>
+                        </button>
+
+                        {practiceContent && (
+                            <button
+                                onClick={() => setShowPractice(!showPractice)}
+                                style={{
+                                    background: showPractice ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.08)',
+                                    border: showPractice ? '1px solid rgba(16, 185, 129, 0.5)' : '1px solid rgba(255,255,255,0.1)',
+                                    color: showPractice ? '#6ee7b7' : 'white',
+                                    padding: '6px 12px',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontSize: '0.9rem',
+                                    fontWeight: 600,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <span>🧠 Practice</span>
+                            </button>
+                        )}
+                    </div>
 
                     {/* Mark complete button */}
                     <button
@@ -870,7 +914,7 @@ function ReaderPage() {
                 onEnded={() => setIsPlaying(false)}
             />
 
-            {/* Recorder Modal/Overlay */}
+            {/* Recording Modal/Overlay */}
             {showRecorder && (
                 <div style={{
                     position: 'absolute',
@@ -885,6 +929,130 @@ function ReaderPage() {
                         onAnalysisStart={handleAnalysisStart}
                         isAnalyzing={isAnalyzing}
                     />
+                </div>
+            )}
+
+            {/* Practice Content Modal */}
+            {showPractice && practiceContent && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 300,
+                    background: 'rgba(0,0,0,0.85)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backdropFilter: 'blur(5px)'
+                }}>
+                    <div style={{
+                        background: '#1e1e24',
+                        width: '90%',
+                        maxWidth: '800px',
+                        height: '80vh',
+                        borderRadius: '20px',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden'
+                    }}>
+                        <div style={{
+                            padding: '20px',
+                            borderBottom: '1px solid rgba(255,255,255,0.1)',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <h2 style={{ margin: 0, color: 'white', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                🧠 Practice Mode
+                            </h2>
+                            <button
+                                onClick={() => setShowPractice(false)}
+                                style={{
+                                    background: 'rgba(255,255,255,0.1)',
+                                    border: 'none',
+                                    borderRadius: '50%',
+                                    width: '32px',
+                                    height: '32px',
+                                    color: 'white',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div style={{ padding: '20px', overflowY: 'auto', flex: 1, display: 'flex', gap: '20px', flexDirection: 'column' }}>
+                            {/* Stats / Vocab Section */}
+                            <div>
+                                <h3 style={{ color: '#a5b4fc', marginBottom: '15px' }}>📚 Key Vocabulary</h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                                    {practiceContent.vocabulary.map((vocab, idx) => (
+                                        <div key={idx} style={{
+                                            background: 'rgba(255,255,255,0.05)',
+                                            padding: '15px',
+                                            borderRadius: '12px',
+                                            border: '1px solid rgba(255,255,255,0.05)'
+                                        }}>
+                                            <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white', marginBottom: '5px' }}>{vocab.word}</div>
+                                            <div style={{ color: '#818cf8', fontSize: '0.9rem', marginBottom: '5px' }}>{vocab.translation}</div>
+                                            <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', fontStyle: 'italic' }}>"{vocab.definition}"</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Quiz Section */}
+                            <div>
+                                <h3 style={{ color: '#fda4af', marginBottom: '15px' }}>📝 Quick Quiz</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    {practiceContent.quiz.map((q, idx) => (
+                                        <div key={idx} style={{
+                                            background: 'rgba(255,255,255,0.03)',
+                                            padding: '20px',
+                                            borderRadius: '12px',
+                                            border: '1px solid rgba(255,255,255,0.05)'
+                                        }}>
+                                            <div style={{ color: 'white', fontWeight: 600, marginBottom: '15px' }}>
+                                                {idx + 1}. {q.question}
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                {q.options.map((opt: string, optIdx: number) => (
+                                                    <button
+                                                        key={optIdx}
+                                                        onClick={(e) => {
+                                                            const btn = e.currentTarget;
+                                                            if (optIdx === q.correctAnswer) {
+                                                                btn.style.background = 'rgba(16, 185, 129, 0.2)';
+                                                                btn.style.borderColor = '#10b981';
+                                                            } else {
+                                                                btn.style.background = 'rgba(239, 68, 68, 0.2)';
+                                                                btn.style.borderColor = '#ef4444';
+                                                            }
+                                                        }}
+                                                        style={{
+                                                            textAlign: 'left',
+                                                            padding: '12px',
+                                                            background: 'rgba(255,255,255,0.05)',
+                                                            border: '1px solid rgba(255,255,255,0.1)',
+                                                            borderRadius: '8px',
+                                                            color: 'rgba(255,255,255,0.8)',
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.2s'
+                                                        }}
+                                                    >
+                                                        {['A', 'B', 'C'][optIdx]}. {opt}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
 
