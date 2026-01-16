@@ -1,5 +1,213 @@
 {
-    "A": {
-        "A_01": {}
+  "A": {
+    "A_01": {}
+  },
+  "K": {
+    "1": {
+      "quiz": [
+        {
+          "question": "Who was Abigail Adams?",
+          "options": [
+            "A famous singer",
+            "A First Lady who helped shape the United States",
+            "A scientist"
+          ],
+          "correctAnswer": 1
+        },
+        {
+          "question": "Where was Abigail Adams born?",
+          "options": [
+            "California",
+            "Massachusetts",
+            "Texas"
+          ],
+          "correctAnswer": 1
+        },
+        {
+          "question": "What did Abigail Adams love to do?",
+          "options": [
+            "Play sports",
+            "Read",
+            "Paint"
+          ],
+          "correctAnswer": 1
+        }
+      ],
+      "vocabulary": [
+        {
+          "word": "causes",
+          "definition": "Reasons or things that make something happen"
+        },
+        {
+          "word": "First Lady",
+          "definition": "The wife of the President of the United States"
+        },
+        {
+          "word": "colonies",
+          "definition": "Places that are ruled by another country"
+        },
+        {
+          "word": "Great Britain",
+          "definition": "A country that ruled the American colonies"
+        },
+        {
+          "word": "equal rights",
+          "definition": "When everyone has the same fair treatment"
+        },
+        {
+          "word": "independent",
+          "definition": "Free to make your own decisions, not ruled by others"
+        },
+        {
+          "word": "portrait",
+          "definition": "A picture of a person"
+        },
+        {
+          "word": "shape",
+          "definition": "To help create or influence something"
+        },
+        {
+          "word": "belonged",
+          "definition": "Was owned or controlled by someone"
+        },
+        {
+          "word": "allowed",
+          "definition": "Given permission to do something"
+        }
+      ]
+    },
+    "2": {
+      "quiz": [
+        {
+          "question": "What is one thing kites can be used as?",
+          "options": [
+            "Toys only",
+            "Tools only",
+            "Both toys and tools"
+          ],
+          "correctAnswer": 2
+        },
+        {
+          "question": "Who used a kite to prove lightning was made of electricity?",
+          "options": [
+            "A Chinese man",
+            "Ben Franklin",
+            "Maria Voris"
+          ],
+          "correctAnswer": 1
+        },
+        {
+          "question": "Why did the man in the Chinese story tie himself to a kite?",
+          "options": [
+            "To fly for fun",
+            "To attack a fort",
+            "To catch a bird"
+          ],
+          "correctAnswer": 1
+        }
+      ],
+      "vocabulary": [
+        {
+          "word": "kite",
+          "definition": "A toy that flies in the sky, often made of paper or cloth on a frame."
+        },
+        {
+          "word": "simple",
+          "definition": "Easy to do or understand."
+        },
+        {
+          "word": "tools",
+          "definition": "Things used to do a job or task."
+        },
+        {
+          "word": "history",
+          "definition": "The story of what happened in the past."
+        },
+        {
+          "word": "named after",
+          "definition": "Given a name because of something else."
+        },
+        {
+          "word": "floats",
+          "definition": "Moves lightly through the air or on water."
+        },
+        {
+          "word": "famous",
+          "definition": "Well-known by many people."
+        },
+        {
+          "word": "attack",
+          "definition": "To try to hurt or damage something."
+        },
+        {
+          "word": "fort",
+          "definition": "A strong building used for protection in battles."
+        },
+        {
+          "word": "tied",
+          "definition": "Fastened with a string or rope."
+        },
+        {
+          "word": "huge",
+          "definition": "Very big."
+        },
+        {
+          "word": "scared",
+          "definition": "Made afraid or frightened."
+        },
+        {
+          "word": "soldiers",
+          "definition": "People who fight in an army."
+        },
+        {
+          "word": "inventor",
+          "definition": "A person who creates something new."
+        },
+        {
+          "word": "lightning",
+          "definition": "A bright flash of light in the sky during a storm."
+        },
+        {
+          "word": "electricity",
+          "definition": "A form of energy that can make lights work and power machines."
+        },
+        {
+          "word": "prove",
+          "definition": "To show that something is true."
+        },
+        {
+          "word": "stormy",
+          "definition": "Having bad weather with rain, wind, and sometimes lightning."
+        },
+        {
+          "word": "metal",
+          "definition": "A hard material like iron, gold, or silver."
+        },
+        {
+          "word": "key",
+          "definition": "A small piece of metal used to open locks."
+        },
+        {
+          "word": "string",
+          "definition": "A thin piece of cord or thread."
+        },
+        {
+          "word": "clouds",
+          "definition": "White or gray collections of water in the sky."
+        },
+        {
+          "word": "shock",
+          "definition": "A sudden, surprising feeling or a small electric feeling."
+        },
+        {
+          "word": "safe",
+          "definition": "Not dangerous; protected from harm."
+        },
+        {
+          "word": "hurt",
+          "definition": "To cause pain or injury."
+        }
+      ]
     }
+  }
 }

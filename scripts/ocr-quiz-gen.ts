@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { createWorker } from 'tesseract.js';
-import pdf2img from 'pdf-img-convert';
+import { PDFDocument } from 'pdf-lib';
+import { execSync } from 'child_process';
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
 
@@ -77,34 +78,130 @@ async function main() {
 
     console.log(`📚 Found ${queue.length} books to process.`);
 
+    // Helper to find file recursively
+    function findFile(dir: string, filename: string): string | null {
+        if (!fs.existsSync(dir)) return null;
+        const files = fs.readdirSync(dir);
+        for (const file of files) {
+            const fullPath = path.join(dir, file);
+            const stat = fs.statSync(fullPath);
+            if (stat.isDirectory()) {
+                const found = findFile(fullPath, filename);
+                if (found) return found;
+            } else if (file === filename) {
+                return fullPath;
+            }
+        }
+        return null;
+    }
+
+    // Helper to find level directory
+    function findLevelDir(baseDir: string, level: string): string | null {
+        const dirs = fs.readdirSync(baseDir);
+        // Match "K级别pdf", "H 级别PDF", "AA绘本pdf" etc.
+        // Heuristic: Starts with level, contains "pdf" (case insensitive)
+        const found = dirs.find(d =>
+            d.toLowerCase().startsWith(level.toLowerCase()) &&
+            d.toLowerCase().includes('pdf')
+        );
+        return found ? path.join(baseDir, found) : null;
+    }
+
     for (const book of queue) {
         console.log(`\n--------------------------------------------------`);
         console.log(`📖 Processing [${book.level}] ${book.title} (ID: ${book.id})...`);
-        const pdfPath = path.join(PDF_BASE_DIR, `${book.level} 级别pdf`, `${book.level}[PDF]`, `${book.level}[PDF]`, book.pdfPath);
 
-        if (!fs.existsSync(pdfPath)) {
-            console.warn(`⚠️ PDF not found: ${pdfPath}`);
+        // Dynamic path finding
+        let pdfPath = null;
+        const levelDir = findLevelDir(PDF_BASE_DIR, book.level);
+
+        if (levelDir) {
+            pdfPath = findFile(levelDir, book.pdfPath);
+        }
+
+        if (!pdfPath || !fs.existsSync(pdfPath)) {
+            console.warn(`⚠️ PDF not found for ${book.title}: searched in ${levelDir || 'unknown dir'}`);
+            // Try to list the level dir to debug if needed
+            // if (levelDir) console.log('Dir contents:', fs.readdirSync(levelDir));
             continue;
         }
 
         try {
-            // 1. PDF 转换为图片
-            // 只取前 5 页 (通常包含主要故事内容，避开最后一页可能是封底)
-            console.log(`   📸 Converting PDF to images...`);
-            const pdfImages = await pdf2img.convert(pdfPath, {
+            // 1. PDF 转换为图片 (Using pdf-lib to split pages + sips to convert to png)
+            // 只取前 5 页 (索引 1-5, 跳过封面 0)
+            console.log(`   📸 Splitting PDF and converting to images (pdf-lib + sips)...`);
+
+            const pdfBytes = fs.readFileSync(pdfPath);
+            const pdfDoc = await PDFDocument.load(pdfBytes);
+            const pageCount = pdfDoc.getPageCount();
+
+            // Deciding which pages to process (Max 5 pages starting from page 2)
+            const startPage = 1; // 0-based index, so 1 is the second page
+            const endPage = Math.min(pageCount, 6);
+            const pagesToProcess = [];
+
+            for (let i = startPage; i < endPage; i++) {
+                pagesToProcess.push(i);
+            }
+
+            if (pagesToProcess.length === 0) {
+                console.warn(`   ⚠️ Book too short, skipping.`);
+                continue;
+            }
+
+            // Create temp directory
+            const tempDir = path.join(RAZ_PATH, 'scripts/temp_ocr');
+            if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+
+            let fullText = '';
+
+            for (const pageIndex of pagesToProcess) {
+                // Create a new PDF with just this page
+                const subDoc = await PDFDocument.create();
+                const [copiedPage] = await subDoc.copyPages(pdfDoc, [pageIndex]);
+                subDoc.addPage(copiedPage);
+
+                const tempPdfPath = path.join(tempDir, `temp_${pageIndex}.pdf`);
+                const tempPngPath = path.join(tempDir, `temp_${pageIndex}.png`);
+
+                fs.writeFileSync(tempPdfPath, await subDoc.save());
+
+                // Use sips to convert to PNG
+                try {
+                    // sips -s format png input.pdf --out output.png (Converts first page of input)
+                    // --resampleWidth 1500 to ensure good quality for OCR
+                    execSync(`sips -s format png --resampleWidth 1500 "${tempPdfPath}" --out "${tempPngPath}"`, { stdio: 'ignore' });
+
+                    if (fs.existsSync(tempPngPath)) {
+                        // OCR
+                        const imageBuffer = fs.readFileSync(tempPngPath);
+                        // @ts-ignore
+                        const ret = await worker.recognize(imageBuffer);
+                        fullText += ret.data.text + '\n';
+
+                        // Clean up png
+                        fs.unlinkSync(tempPngPath);
+                    }
+                } catch (err) {
+                    console.error(`     ❌ Failed to convert/OCR page ${pageIndex}:`, err);
+                }
+
+                // Clean up pdf
+                if (fs.existsSync(tempPdfPath)) fs.unlinkSync(tempPdfPath);
+            }
+
+            // Cleanup temp dir
+            // fs.rmdirSync(tempDir); // Keep for debugging if needed, or remove
+
+            // 2. OCR Result Processing (Removed old Logic)
+            /* 
+            // Old pdf2img logic removed
+            const pdfImages = await pdf2img.convert(pdfPath, { 
                 page_numbers: [2, 3, 4, 5, 6], // Skip cover (1)
                 width: 1000 // Resize for better OCR performance/speed
             });
-
-            // 2. OCR 识别文本
-            console.log(`   📝 Extracting text with Tesseract...`);
-            let fullText = '';
-            for (let i = 0; i < pdfImages.length; i++) {
-                // pdf-img-convert returns Uint8Array (buffer)
-                // @ts-ignore
-                const ret = await worker.recognize(pdfImages[i]);
-                fullText += ret.data.text + '\n';
-            }
+            ...
+            */
 
             // 清理文本
             fullText = fullText.replace(/\s+/g, ' ').trim();
