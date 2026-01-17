@@ -67,7 +67,11 @@ async function main() {
 
         booksData[lvl].forEach((book: any) => {
             if (targetBookId && book.id !== targetBookId) return;
-            // 如果已经生成过，且不是强制重新生成，则跳过? (暂不跳过，允许覆盖)
+            // 如果已经生成过，且包含 discussion 字段 (新版特征)，则跳过
+            if (contentData[lvl] && contentData[lvl][book.id] && contentData[lvl][book.id].discussion) {
+                // console.log(`Skipping ${book.id} (already generated)`);
+                return;
+            }
             queue.push({ ...book, level: lvl });
         });
     });

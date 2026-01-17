@@ -3,11 +3,12 @@ import HomePage from './pages/HomePage'
 import LevelPage from './pages/LevelPage'
 import ReaderPage from './pages/ReaderPage'
 import StatsPage from './pages/StatsPage'
+import PracticePage from './pages/PracticePage'
 import { ProgressProvider } from './contexts/ProgressContext'
 
 function App() {
   const location = useLocation()
-  const isReaderPage = location.pathname.startsWith('/read/')
+  const isReaderPage = location.pathname.startsWith('/read/') || location.pathname.startsWith('/practice/')
 
   return (
     <ProgressProvider>
@@ -28,6 +29,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/level/:level" element={<LevelPage />} />
             <Route path="/read/:level/:bookId" element={<ReaderPage />} />
+            <Route path="/practice/:level/:bookId" element={<PracticePage />} />
             <Route path="/stats" element={<StatsPage />} />
           </Routes>
         </main>

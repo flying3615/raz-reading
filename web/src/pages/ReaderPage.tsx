@@ -18,7 +18,7 @@ function ReaderPage() {
         addReadingTime,
         markAsCompleted,
         markRecorded,
-        markPracticed,
+        // markPracticed, (unused in this file now)
         getBookProgress
     } = useProgress();
 
@@ -64,7 +64,10 @@ function ReaderPage() {
 
     // Practice Content State
     const [practiceContent, setPracticeContent] = useState<{ quiz: any[], vocabulary: any[], discussion?: any[] } | null>(null);
-    const [showPractice, setShowPractice] = useState(false);
+    // Practice Content State
+    // Practice Content State defined above
+    // showPractice state removed as we use navigation now
+    // showPractice state removed as we use navigation now
 
     // Load practice content
     useEffect(() => {
@@ -857,15 +860,14 @@ function ReaderPage() {
                             {practiceContent && (
                                 <button
                                     onClick={() => {
-                                        setShowPractice(!showPractice);
-                                        if (bookId && !showPractice) {
-                                            markPracticed(bookId);
+                                        if (bookId) {
+                                            navigate(`/practice/${level}/${bookId}`);
                                         }
                                     }}
                                     style={{
-                                        background: showPractice ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.08)',
-                                        border: showPractice ? '1px solid rgba(16, 185, 129, 0.5)' : '1px solid rgba(255,255,255,0.1)',
-                                        color: showPractice ? '#6ee7b7' : 'white',
+                                        background: 'rgba(255,255,255,0.08)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        color: 'white',
                                         padding: '6px 12px',
                                         borderRadius: '8px',
                                         cursor: 'pointer',
@@ -917,214 +919,7 @@ function ReaderPage() {
                 onEnded={() => setIsPlaying(false)}
             />
 
-            {/* Practice Content Modal */}
-            {showPractice && practiceContent && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    zIndex: 300,
-                    background: 'rgba(0,0,0,0.85)',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backdropFilter: 'blur(5px)'
-                }}>
-                    <div style={{
-                        background: '#1e1e24',
-                        width: '90%',
-                        maxWidth: '800px',
-                        height: '80vh',
-                        borderRadius: '20px',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        overflow: 'hidden'
-                    }}>
-                        <div style={{
-                            padding: '20px',
-                            borderBottom: '1px solid rgba(255,255,255,0.1)',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                        }}>
-                            <h2 style={{ margin: 0, color: 'white', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                🧠 Practice Mode
-                            </h2>
-                            <button
-                                onClick={() => setShowPractice(false)}
-                                style={{
-                                    background: 'rgba(255,255,255,0.1)',
-                                    border: 'none',
-                                    borderRadius: '50%',
-                                    width: '32px',
-                                    height: '32px',
-                                    color: 'white',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                ✕
-                            </button>
-                        </div>
 
-                        <div style={{ padding: '20px', overflowY: 'auto', flex: 1, display: 'flex', gap: '20px', flexDirection: 'column' }}>
-                            {/* Stats / Vocab Section */}
-                            <details open>
-                                <summary style={{ cursor: 'pointer', outline: 'none', marginBottom: '15px', color: '#a5b4fc', fontSize: '1.2rem', fontWeight: 'bold' }}>
-                                    📚 Key Vocabulary
-                                </summary>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-                                    {practiceContent.vocabulary.map((vocab, idx) => (
-                                        <div key={idx} style={{
-                                            background: 'rgba(255,255,255,0.05)',
-                                            padding: '15px',
-                                            borderRadius: '12px',
-                                            border: '1px solid rgba(255,255,255,0.05)'
-                                        }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
-                                                <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white' }}>{vocab.word}</div>
-                                                {vocab.partOfSpeech && (
-                                                    <span style={{
-                                                        background: 'rgba(255,255,255,0.1)',
-                                                        color: '#e2e8f0',
-                                                        fontSize: '0.7rem',
-                                                        padding: '2px 6px',
-                                                        borderRadius: '4px',
-                                                        fontFamily: 'monospace'
-                                                    }}>
-                                                        {vocab.partOfSpeech}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div style={{ color: '#a5b4fc', fontSize: '0.95rem', lineHeight: '1.4', marginBottom: vocab.example ? '8px' : '0' }}>
-                                                {vocab.definition}
-                                            </div>
-                                            {vocab.example && (
-                                                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', fontStyle: 'italic', paddingLeft: '8px', borderLeft: '2px solid rgba(255,255,255,0.1)' }}>
-                                                    "{vocab.example}"
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </details>
-
-                            {/* Quiz Section */}
-                            <details>
-                                <summary style={{ cursor: 'pointer', outline: 'none', marginBottom: '15px', color: '#fda4af', fontSize: '1.2rem', fontWeight: 'bold' }}>
-                                    📝 Quick Quiz
-                                </summary>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                    {practiceContent.quiz.map((q, idx) => (
-                                        <div key={idx} style={{
-                                            background: 'rgba(255,255,255,0.03)',
-                                            padding: '20px',
-                                            borderRadius: '12px',
-                                            border: '1px solid rgba(255,255,255,0.05)'
-                                        }}>
-                                            <div style={{ color: 'white', fontWeight: 600, marginBottom: '15px' }}>
-                                                {idx + 1}. {q.question}
-                                            </div>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                                {q.options.map((opt: string, optIdx: number) => (
-                                                    <button
-                                                        key={optIdx}
-                                                        onClick={(e) => {
-                                                            const btn = e.currentTarget;
-                                                            if (optIdx === q.correctAnswer) {
-                                                                btn.style.background = 'rgba(16, 185, 129, 0.2)';
-                                                                btn.style.borderColor = '#10b981';
-                                                            } else {
-                                                                btn.style.background = 'rgba(239, 68, 68, 0.2)';
-                                                                btn.style.borderColor = '#ef4444';
-                                                            }
-                                                        }}
-                                                        style={{
-                                                            textAlign: 'left',
-                                                            padding: '12px',
-                                                            background: 'rgba(255,255,255,0.05)',
-                                                            border: '1px solid rgba(255,255,255,0.1)',
-                                                            borderRadius: '8px',
-                                                            color: 'rgba(255,255,255,0.8)',
-                                                            cursor: 'pointer',
-                                                            transition: 'all 0.2s'
-                                                        }}
-                                                    >
-                                                        {['A', 'B', 'C'][optIdx]}. {opt}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </details>
-                        </div>
-
-                        {/* Discussion Section */}
-                        {practiceContent.discussion && practiceContent.discussion.length > 0 && (
-                            <details>
-                                <summary style={{ cursor: 'pointer', outline: 'none', marginBottom: '15px', color: '#c084fc', fontSize: '1.2rem', fontWeight: 'bold' }}>
-                                    🗣️ Discussion
-                                </summary>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                    {practiceContent.discussion.map((item, idx) => (
-                                        <div key={idx} style={{
-                                            background: 'rgba(255,255,255,0.05)',
-                                            padding: '20px',
-                                            borderRadius: '16px',
-                                            border: '1px solid rgba(255,255,255,0.05)'
-                                        }}>
-                                            <div style={{
-                                                fontSize: '1.1rem',
-                                                color: 'white',
-                                                marginBottom: '15px',
-                                                lineHeight: '1.5',
-                                                display: 'flex',
-                                                gap: '10px'
-                                            }}>
-                                                <span style={{ fontSize: '1.4rem' }}>🤔</span>
-                                                {item.question}
-                                            </div>
-
-                                            <details style={{
-                                                marginTop: '10px',
-                                                borderTop: '1px solid rgba(255,255,255,0.1)',
-                                                paddingTop: '10px'
-                                            }}>
-                                                <summary style={{
-                                                    cursor: 'pointer',
-                                                    color: '#c084fc',
-                                                    fontWeight: 500,
-                                                    outline: 'none',
-                                                    listStyle: 'none', // helps hide default arrow in some browsers
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '6px'
-                                                }}>
-                                                    👀 Reveal Analysis
-                                                </summary>
-                                                <div style={{
-                                                    marginTop: '10px',
-                                                    color: 'rgba(255,255,255,0.7)',
-                                                    fontSize: '0.95rem',
-                                                    lineHeight: '1.6',
-                                                    background: 'rgba(192, 132, 252, 0.1)',
-                                                    padding: '12px',
-                                                    borderRadius: '8px'
-                                                }}>
-                                                    {item.analysis}
-                                                </div>
-                                            </details>
-                                        </div>
-                                    ))}
-                                </div>
-                            </details>
-                        )}
-                    </div>
-                </div>
-            )}
 
             {/* Analysis Result Modal */}
             {analysisResult && (
