@@ -143,9 +143,9 @@ async function main() {
             const pdfDoc = await PDFDocument.load(pdfBytes);
             const pageCount = pdfDoc.getPageCount();
 
-            // Deciding which pages to process (Max 5 pages starting from page 2)
-            const startPage = 1; // 0-based index, so 1 is the second page
-            const endPage = Math.min(pageCount, 6);
+            // Deciding which pages to process (Skip cover page 0)
+            const startPage = 1; // 0-based index
+            const endPage = pageCount; // Process until the end
             const pagesToProcess = [];
 
             for (let i = startPage; i < endPage; i++) {
