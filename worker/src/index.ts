@@ -216,7 +216,7 @@ async function analyzeReading(request: Request, env: Env): Promise<Response> {
         // Whisper input expects an array of numbers (float32) or standard audio file bytes
         // Cloudflare AI run interface for whisper handles raw bytes if passed in input
         const transcription = await env.AI.run('@cf/openai/whisper', {
-            audio: [...new Uint8Array(audioBuffer)],
+            audio: new Uint8Array(audioBuffer),
         });
 
         const transcribedText = transcription.text || '';
@@ -285,7 +285,10 @@ async function analyzeReading(request: Request, env: Env): Promise<Response> {
 
     } catch (error) {
         console.error('Analysis error:', error);
-        return new Response(JSON.stringify({ error: 'DeepSeek analysis failed' }), {
+        return new Response(JSON.stringify({
+            error: 'Analysis failed',
+            details: error instanceof Error ? error.message : String(error)
+        }), {
             status: 500,
             headers: {
                 'Content-Type': 'application/json',
