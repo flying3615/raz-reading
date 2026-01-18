@@ -480,15 +480,12 @@ function ReaderPage() {
         }
     };
 
+    const progressBarRef = useRef<HTMLDivElement>(null);
+
     const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!audioRef.current || !duration) return;
+        if (!audioRef.current || !duration || !progressBarRef.current) return;
 
-        // Get the track element directly by finding the element with flex: 1
-        const container = e.currentTarget;
-        const trackElement = container.firstElementChild as HTMLDivElement;
-        if (!trackElement) return;
-
-        const rect = trackElement.getBoundingClientRect();
+        const rect = progressBarRef.current.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const percentage = Math.max(0, Math.min(1, x / rect.width));
         audioRef.current.currentTime = percentage * duration;
@@ -817,7 +814,7 @@ function ReaderPage() {
                                     cursor: 'pointer'
                                 }}
                             >
-                                <div style={{ flex: 1, height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', position: 'relative' }}>
+                                <div ref={progressBarRef} style={{ flex: 1, height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', position: 'relative' }}>
                                     <div style={{ width: duration ? `${(currentTime / duration) * 100}%` : '0%', height: '100%', background: '#6366f1', borderRadius: '2px' }} />
                                 </div>
                             </div>
