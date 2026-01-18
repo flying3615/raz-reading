@@ -104,6 +104,12 @@ function ReaderPage() {
             const formData = new FormData();
             formData.append('audio', audioBlob);
 
+            // Add context if available (vocabulary words)
+            if (practiceContent && practiceContent.vocabulary) {
+                const keywords = practiceContent.vocabulary.map((v: any) => v.word).join(', ');
+                formData.append('context', keywords);
+            }
+
             const response = await fetch(`${API_BASE}/analyze-reading`, {
                 method: 'POST',
                 body: formData,

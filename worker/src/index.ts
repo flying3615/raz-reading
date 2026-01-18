@@ -221,9 +221,11 @@ async function analyzeReading(request: Request, env: Env): Promise<Response> {
 
         const transcribedText = transcription.text || '';
 
+        const context = formData.get('context') as string || '';
+
         // 步骤 2: 点评 (Llama 3)
         // 让 AI 扮演一位鼓励型但严谨的英语老师
-        const systemPrompt = `You are a friendly and encouraging English teacher. 
+        let systemPrompt = `You are a friendly and encouraging English teacher. 
         Your student just read a passage aloud. I will provide you with the text they spoke (transcribed from audio).
         
         Please provide feedback in the following STRICT JSON format only. Do not add any markdown formatting or introductory text.
@@ -234,6 +236,10 @@ async function analyzeReading(request: Request, env: Env): Promise<Response> {
         }
 
         The student's transcription is below. Focus on fluency and clarity. If the text is gibberish, give a low score.`;
+
+        if (context) {
+            systemPrompt += `\n\nContext/Keywords from the book: ${context}. \nPlease check if the student pronounced these keywords correctly if they appear in the transcription.`;
+        }
 
         const response = await env.AI.run('@cf/meta/llama-3-8b-instruct', {
             messages: [
