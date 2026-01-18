@@ -271,8 +271,8 @@ async function main() {
                 if (!contentData[book.level]) contentData[book.level] = {};
                 const existingEntry = contentData[book.level][book.id] || {};
                 contentData[book.level][book.id] = {
-                    fullText: fullText,
-                    ...existingEntry // Preserve quiz, vocab, discussion if they exist
+                    ...existingEntry, // Preserve quiz, vocab, discussion
+                    fullText: fullText, // Overwrite with new fullText
                 };
                 fs.writeFileSync(OUTPUT_FILE, JSON.stringify(contentData, null, 2));
                 console.log(`   ✅ Saved fullText for ${book.title} (${fullText.length} chars)`);
@@ -317,9 +317,11 @@ Return ONLY valid JSON in the following format:
 
                     // Save to map (include fullText for reading analysis)
                     if (!contentData[book.level]) contentData[book.level] = {};
+                    const existingEntry = contentData[book.level][book.id] || {};
                     contentData[book.level][book.id] = {
+                        ...existingEntry,
+                        ...json,
                         fullText: fullText, // Add the OCR text for comparison
-                        ...json
                     };
 
                     // 即时保存
