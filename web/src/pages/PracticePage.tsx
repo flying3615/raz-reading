@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import booksData from '../data/books.json';
 import booksContentData from '../data/books-content.json';
@@ -6,7 +6,7 @@ import { useProgress } from '../contexts/ProgressContext';
 
 function PracticePage() {
     const { level, bookId } = useParams<{ level: string; bookId: string }>();
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const { markPracticed } = useProgress();
 
     const [practiceContent, setPracticeContent] = useState<{ quiz: any[], vocabulary: any[], discussion?: any[] } | null>(null);
@@ -32,7 +32,7 @@ function PracticePage() {
     const handleComplete = () => {
         if (bookId) {
             markPracticed(bookId);
-            navigate(`/read/${level}/${bookId}`);
+            window.close();
         }
     };
 
@@ -62,7 +62,7 @@ function PracticePage() {
                 borderBottom: '1px solid rgba(255,255,255,0.1)'
             }}>
                 <button
-                    onClick={() => navigate(`/read/${level}/${bookId}`)}
+                    onClick={() => window.close()}
                     style={{
                         background: 'rgba(255,255,255,0.1)',
                         border: 'none',
@@ -73,7 +73,7 @@ function PracticePage() {
                         fontSize: '1rem'
                     }}
                 >
-                    ← Back
+                    ✕ Close
                 </button>
                 <div>
                     <div style={{ fontSize: '0.9rem', color: '#a5b4fc' }}>Practice Mode</div>

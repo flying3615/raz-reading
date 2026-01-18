@@ -861,7 +861,7 @@ function ReaderPage() {
                                 <button
                                     onClick={() => {
                                         if (bookId) {
-                                            navigate(`/practice/${level}/${bookId}`);
+                                            window.open(`/practice/${level}/${bookId}`, '_blank');
                                         }
                                     }}
                                     style={{
