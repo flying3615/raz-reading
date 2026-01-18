@@ -11,3 +11,6 @@ bucket_name = "raz-files"
 CORS_ORIGIN = "*"
 [ai]
 binding = "AI"
+
+[observability]
+enabled = false
