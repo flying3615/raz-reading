@@ -14,6 +14,7 @@ const help = args.includes('--help') || args.includes('-h');
 const targetBookId = args.find(a => a.startsWith('--bookId='))?.split('=')[1];
 const targetLevel = args.find(a => a.startsWith('--level='))?.split('=')[1];
 const limit = parseInt(args.find(a => a.startsWith('--limit='))?.split('=')[1] || '0');
+const textOnly = args.includes('--textOnly');
 
 if (help) {
     console.log(`
@@ -23,6 +24,7 @@ Options:
   --bookId=<id>    Process a specific book by ID (e.g., --bookId=A_02)
   --level=<level>  Process all books in a level (e.g., --level=A)
   --limit=<num>    Limit the number of books processed (default: 0 = no limit)
+  --textOnly       Only extract fullText (OCR), skip AI quiz generation
   --help, -h       Show this help message
 `);
     process.exit(0);
@@ -39,13 +41,14 @@ const PDF_BASE_DIR = path.join(RAZ_PATH, 'RAZ绘本pdf');
 const OUTPUT_FILE = path.join(RAZ_PATH, 'web/src/data/books-content.json');
 
 async function main() {
-    if (!process.env.DEEPSEEK_API_KEY) {
+    if (!textOnly && !process.env.DEEPSEEK_API_KEY) {
         console.error('❌ Error: DEEPSEEK_API_KEY is not set in .env file.');
         console.log('Please create scripts/.env file with: DEEPSEEK_API_KEY=your_key');
+        console.log('Or use --textOnly flag to skip AI generation.');
         process.exit(1);
     }
 
-    console.log('🚀 Starting OCR & Quiz Generation...');
+    console.log(textOnly ? '🚀 Starting OCR-Only Text Extraction...' : '🚀 Starting OCR & Quiz Generation...');
 
     // 初始化 Tesseract Worker
     const worker = await createWorker('eng');
@@ -217,10 +220,22 @@ async function main() {
 
             console.log(`   ✨ Extracted ${fullText.length} characters.`);
 
-            // 3. AI 生成题目
-            console.log(`   🧠 Generating Quiz & Vocab with DeepSeek...`);
+            // Save based on mode
+            if (textOnly) {
+                // TextOnly mode: just save/update fullText, preserve existing data
+                if (!contentData[book.level]) contentData[book.level] = {};
+                const existingEntry = contentData[book.level][book.id] || {};
+                contentData[book.level][book.id] = {
+                    fullText: fullText,
+                    ...existingEntry // Preserve quiz, vocab, discussion if they exist
+                };
+                fs.writeFileSync(OUTPUT_FILE, JSON.stringify(contentData, null, 2));
+                console.log(`   ✅ Saved fullText for ${book.title} (${fullText.length} chars)`);
+            } else {
+                // Full mode: generate AI content
+                console.log(`   🧠 Generating Quiz & Vocab with DeepSeek...`);
 
-            const prompt = `You are a helpful assistant for kids' reading content.
+                const prompt = `You are a helpful assistant for kids' reading content.
 Based on the following story text (extracted via OCR), please generate:
 1. 3 Multiple choice quiz questions (simple English, suitable for kids).
 2. **ALL** vocabulary words found in the text that seem to be part of a "Glossary" or "Vocabulary" list (usually at the end or beginning). If no explicit list is found, identify key difficult words. **Do NOT limit the number of words.**
@@ -245,26 +260,27 @@ Return ONLY valid JSON in the following format:
   ]
 }`;
 
-            const completion = await openai.chat.completions.create({
-                messages: [{ role: "system", content: "You are a helpful assistant." }, { role: "user", content: prompt }],
-                model: "deepseek-chat",
-                response_format: { type: "json_object" }
-            });
+                const completion = await openai.chat.completions.create({
+                    messages: [{ role: "system", content: "You are a helpful assistant." }, { role: "user", content: prompt }],
+                    model: "deepseek-chat",
+                    response_format: { type: "json_object" }
+                });
 
-            const content = completion.choices[0].message.content;
-            if (content) {
-                const json = JSON.parse(content);
+                const content = completion.choices[0].message.content;
+                if (content) {
+                    const json = JSON.parse(content);
 
-                // Save to map (include fullText for reading analysis)
-                if (!contentData[book.level]) contentData[book.level] = {};
-                contentData[book.level][book.id] = {
-                    fullText: fullText, // Add the OCR text for comparison
-                    ...json
-                };
+                    // Save to map (include fullText for reading analysis)
+                    if (!contentData[book.level]) contentData[book.level] = {};
+                    contentData[book.level][book.id] = {
+                        fullText: fullText, // Add the OCR text for comparison
+                        ...json
+                    };
 
-                // 即时保存
-                fs.writeFileSync(OUTPUT_FILE, JSON.stringify(contentData, null, 2));
-                console.log(`   ✅ Saved content for ${book.title} (${fullText.length} chars text)`);
+                    // 即时保存
+                    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(contentData, null, 2));
+                    console.log(`   ✅ Saved content for ${book.title} (${fullText.length} chars text)`);
+                }
             }
 
         } catch (e) {
