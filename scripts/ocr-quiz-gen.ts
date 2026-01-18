@@ -211,8 +211,53 @@ async function main() {
             ...
             */
 
-            // 清理文本
-            fullText = fullText.replace(/\s+/g, ' ').trim();
+            // Advanced Text Cleaning
+            function cleanOCRText(text: string): string {
+                const lines = text.split('\n');
+                const cleanedLines = lines.filter(line => {
+                    const trimmed = line.trim();
+                    if (!trimmed) return false;
+
+                    // Filter lines that are too short (noise) unless they look like headers (all caps)
+                    if (trimmed.length < 3) return false;
+
+                    // Filter lines with too many symbols vs letters
+                    const letters = trimmed.replace(/[^a-zA-Z]/g, '').length;
+                    const symbols = trimmed.replace(/[a-zA-Z0-9\s.,'?!-]/g, '').length;
+
+                    // If more than 30% of chars are weird symbols, likely garbage
+                    if (symbols > trimmed.length * 0.3) return false;
+
+                    // If very few letters compared to length (e.g. "12 . . 34")
+                    if (letters < trimmed.length * 0.3 && trimmed.length > 5) return false;
+
+                    return true;
+                }).map(line => {
+                    // Fix common OCR issues
+                    return line
+                        .replace(/\|/g, 'I') // Replace pipes with I
+                        .replace(/\s+/g, ' ') // Collapse spaces
+                        .replace(/^[.,'?!]+\s*/, '') // Remove leading punctuation
+                        .trim();
+                });
+
+                // Join and clean up paragraph breaks
+                return cleanedLines.join('\n')
+                    // Join hyphenated words across lines (e.g., "tradi-\ntional" -> "traditional")
+                    .replace(/([a-z])-\n([a-z])/g, '$1$2')
+                    // Replace single newlines with spaces (merge paragraphs)
+                    .replace(/(?<!\n)\n(?!\n)/g, ' ')
+                    // Restore double newlines as paragraph breaks
+                    // .replace(/\n\n+/g, '\n\n') 
+                    // Actually, for simple reading, just one big block is often mostly fine, 
+                    // but let's try to keep some structure if possible. 
+                    // For now, let's just make it one clean string as the previous code did, but filtered.
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            }
+
+            fullText = cleanOCRText(fullText);
+
             if (fullText.length < 50) {
                 console.warn(`   ⚠️ Warning: Extracted text is too short. OCR might have failed.`);
                 // continue; // Don't skip, try AI anyway?
