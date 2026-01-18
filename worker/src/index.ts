@@ -223,34 +223,74 @@ async function analyzeReading(request: Request, env: Env): Promise<Response> {
         const transcribedText = transcription.text || '';
 
         const context = formData.get('context') as string || '';
+        const originalText = formData.get('originalText') as string || '';
 
         // 步骤 2: 点评 (Llama 3)
-        // 让 AI 扮演一位鼓励型但严谨的英语老师
-        let systemPrompt = `You are a friendly and encouraging English teacher. 
-        Your student just read a passage aloud. I will provide you with the text they spoke (transcribed from audio).
-        
-        Please provide feedback in the following STRICT JSON format only. Do not add any markdown formatting or introductory text.
+        let systemPrompt: string;
+        let userPrompt: string;
+
+        if (originalText) {
+            // 逐句比对模式
+            systemPrompt = `You are an English reading tutor analyzing a student's reading.
+Compare the student's spoken text (transcription) with the original book text.
+
+Respond ONLY in valid JSON format:
+{
+    "overallScore": number (0-100),
+    "sentenceAnalysis": [
         {
-            "score": number (0-100),
-            "feedback": "string (1-2 sentences of encouraging feedback)",
-            "pronunciation_issues": ["word1", "word2"] (list of words that look incorrect or misspelled in the transcription, max 3)
+            "original": "Original sentence from text",
+            "spoken": "What student said (empty string if skipped)",
+            "status": "correct" | "partial" | "skipped" | "error",
+            "issues": ["specific word mispronunciations"] 
         }
+    ],
+    "missedSentences": ["sentences completely skipped"],
+    "pronunciationIssues": [
+        { "word": "example", "expected": "correct form", "spoken": "what was said" }
+    ],
+    "summary": "Brief encouraging feedback (1-2 sentences)"
+}
 
-        The student's transcription is below. Focus on fluency and clarity. If the text is gibberish, give a low score.`;
+Guidelines:
+- Break original text into sentences for comparison
+- "correct": student read the sentence accurately
+- "partial": minor word substitutions or additions
+- "skipped": sentence was not read at all
+- "error": major differences or unintelligible
+- Be encouraging but accurate`;
 
-        if (context) {
-            systemPrompt += `\n\nContext/Keywords from the book: ${context}. \nPlease check if the student pronounced these keywords correctly if they appear in the transcription.`;
+            userPrompt = `Original Text:\n"${originalText.substring(0, 2000)}"\n\nStudent's Reading (transcribed):\n"${transcribedText}"`;
+        } else {
+            // 通用点评模式 (无原文)
+            systemPrompt = `You are a friendly and encouraging English teacher. 
+Your student just read a passage aloud. I will provide you with the text they spoke (transcribed from audio).
+
+Please provide feedback in the following STRICT JSON format only. Do not add any markdown formatting or introductory text.
+{
+    "overallScore": number (0-100),
+    "feedback": "string (1-2 sentences of encouraging feedback)",
+    "pronunciation_issues": ["word1", "word2"] (list of words that look incorrect or misspelled in the transcription, max 3)
+}
+
+The student's transcription is below. Focus on fluency and clarity. If the text is gibberish, give a low score.`;
+
+            if (context) {
+                systemPrompt += `\n\nContext/Keywords from the book: ${context}. \nPlease check if the student pronounced these keywords correctly if they appear in the transcription.`;
+            }
+
+            userPrompt = `Student's transcription: "${transcribedText}"`;
         }
 
         const response = await env.AI.run('@cf/meta/llama-3-8b-instruct', {
             messages: [
                 { role: 'system', content: systemPrompt },
-                { role: 'user', content: `Student's transcription: "${transcribedText}"` }
+                { role: 'user', content: userPrompt }
             ]
         });
 
         // 尝试解析 JSON，如果 AI 返回了额外文本，尝试提取 JSON 部分
-        let result = { score: 0, feedback: "Analysis failed", pronunciation_issues: [] as string[] };
+        let result: any = { overallScore: 0, feedback: "Analysis failed", pronunciation_issues: [] };
         // @ts-ignore
         const aiRawResponse = response.response;
 
@@ -266,16 +306,22 @@ async function analyzeReading(request: Request, env: Env): Promise<Response> {
                 // 尝试直接解析
                 result = JSON.parse(aiRawResponse);
             }
+
+            // Normalize score field name
+            if (result.score !== undefined && result.overallScore === undefined) {
+                result.overallScore = result.score;
+            }
         } catch (e) {
             console.error('JSON parsing failed:', e);
             console.log('Raw response:', aiRawResponse);
             // 如果解析失败，仍然尝试展示原始文本，但尽量干净
             result.feedback = aiRawResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-            result.score = 70; // 默认分
+            result.overallScore = 70; // 默认分
         }
 
         return new Response(JSON.stringify({
             transcription: transcribedText,
+            hasOriginalText: !!originalText,
             ...result
         }), {
             headers: {

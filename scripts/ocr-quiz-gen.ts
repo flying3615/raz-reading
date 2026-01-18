@@ -67,9 +67,10 @@ async function main() {
 
         booksData[lvl].forEach((book: any) => {
             if (targetBookId && book.id !== targetBookId) return;
-            // 如果已经生成过，且包含 discussion 字段 (新版特征)，则跳过
-            if (contentData[lvl] && contentData[lvl][book.id] && contentData[lvl][book.id].discussion) {
-                // console.log(`Skipping ${book.id} (already generated)`);
+            // 如果已经生成过，且包含 fullText 字段 (新版特征)，则跳过
+            const existingEntry = contentData[lvl]?.[book.id];
+            if (existingEntry && existingEntry.fullText && existingEntry.discussion) {
+                // console.log(`Skipping ${book.id} (already generated with fullText)`);
                 return;
             }
             queue.push({ ...book, level: lvl });
@@ -254,13 +255,16 @@ Return ONLY valid JSON in the following format:
             if (content) {
                 const json = JSON.parse(content);
 
-                // Save to map
+                // Save to map (include fullText for reading analysis)
                 if (!contentData[book.level]) contentData[book.level] = {};
-                contentData[book.level][book.id] = json;
+                contentData[book.level][book.id] = {
+                    fullText: fullText, // Add the OCR text for comparison
+                    ...json
+                };
 
                 // 即时保存
                 fs.writeFileSync(OUTPUT_FILE, JSON.stringify(contentData, null, 2));
-                console.log(`   ✅ Saved content for ${book.title}`);
+                console.log(`   ✅ Saved content for ${book.title} (${fullText.length} chars text)`);
             }
 
         } catch (e) {

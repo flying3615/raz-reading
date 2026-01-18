@@ -60,7 +60,17 @@ function ReaderPage() {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isPlayingPreview, setIsPlayingPreview] = useState(false);
 
-    const [analysisResult, setAnalysisResult] = useState<{ score: number; feedback: string; pronunciation_issues?: string[] } | null>(null);
+    const [analysisResult, setAnalysisResult] = useState<{
+        score?: number;
+        overallScore?: number;
+        feedback?: string;
+        summary?: string;
+        pronunciation_issues?: string[];
+        pronunciationIssues?: { word: string; expected?: string; spoken?: string }[];
+        hasOriginalText?: boolean;
+        sentenceAnalysis?: { original: string; spoken: string; status: string; issues?: string[] }[];
+        missedSentences?: string[];
+    } | null>(null);
 
     // Practice Content State
     const [practiceContent, setPracticeContent] = useState<{ quiz: any[], vocabulary: any[], discussion?: any[] } | null>(null);
@@ -108,6 +118,11 @@ function ReaderPage() {
             if (practiceContent && practiceContent.vocabulary) {
                 const keywords = practiceContent.vocabulary.map((v: any) => v.word).join(', ');
                 formData.append('context', keywords);
+            }
+
+            // Add original text for comparison analysis
+            if (practiceContent && (practiceContent as any).fullText) {
+                formData.append('originalText', (practiceContent as any).fullText);
             }
 
             const response = await fetch(`${API_BASE}/analyze-reading`, {
@@ -944,12 +959,15 @@ function ReaderPage() {
                         background: '#1e1e24',
                         padding: '0',
                         borderRadius: '24px',
-                        maxWidth: '500px',
+                        maxWidth: '600px',
                         width: '100%',
+                        maxHeight: '80vh',
                         border: '1px solid rgba(255,255,255,0.1)',
                         animation: 'fadeIn 0.3s ease',
                         overflow: 'hidden',
-                        boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
+                        boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+                        display: 'flex',
+                        flexDirection: 'column'
                     }}>
                         {/* Header with Score */}
                         <div style={{
@@ -957,11 +975,14 @@ function ReaderPage() {
                             padding: '25px 30px',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'space-between'
+                            justifyContent: 'space-between',
+                            flexShrink: 0
                         }}>
                             <div>
                                 <h3 style={{ margin: 0, color: 'white', fontSize: '1.4rem' }}>🎉 Analysis Result</h3>
-                                <div style={{ color: 'rgba(255,255,255,0.8)', marginTop: '4px', fontSize: '0.9rem' }}>Great job reading!</div>
+                                <div style={{ color: 'rgba(255,255,255,0.8)', marginTop: '4px', fontSize: '0.9rem' }}>
+                                    {analysisResult.hasOriginalText ? 'Sentence Comparison' : 'Reading Feedback'}
+                                </div>
                             </div>
                             <div style={{
                                 background: 'rgba(255,255,255,0.2)',
@@ -972,49 +993,93 @@ function ReaderPage() {
                                 border: '1px solid rgba(255,255,255,0.3)'
                             }}>
                                 <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.9)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>Score</div>
-                                <div style={{ fontSize: '1.8rem', color: 'white', fontWeight: 700, lineHeight: 1 }}>{analysisResult.score}</div>
+                                <div style={{ fontSize: '1.8rem', color: 'white', fontWeight: 700, lineHeight: 1 }}>{analysisResult.overallScore ?? analysisResult.score ?? 0}</div>
                             </div>
                         </div>
 
-                        {/* Content */}
-                        <div style={{ padding: '30px' }}>
-                            {/* Feedback Section */}
-                            <div style={{ marginBottom: '25px' }}>
-                                <h4 style={{ color: '#a5b4fc', margin: '0 0 10px 0', fontSize: '1rem' }}>📝 Feedback</h4>
-                                <p style={{ color: 'rgba(255,255,255,0.9)', lineHeight: '1.6', fontSize: '1.05rem', margin: 0 }}>
-                                    {analysisResult.feedback}
-                                </p>
-                            </div>
-
-                            {/* Pronunciation Issues Section */}
-                            {analysisResult.pronunciation_issues && analysisResult.pronunciation_issues.length > 0 && (
-                                <div>
-                                    <h4 style={{ color: '#fda4af', margin: '0 0 10px 0', fontSize: '1rem' }}>🎯 Words to Practice</h4>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                                        {analysisResult.pronunciation_issues.map((word, idx) => (
-                                            <span key={idx} style={{
-                                                background: 'rgba(251, 113, 133, 0.15)',
-                                                border: '1px solid rgba(251, 113, 133, 0.3)',
-                                                color: '#fda4af',
-                                                padding: '6px 14px',
-                                                borderRadius: '20px',
-                                                fontSize: '0.95rem',
-                                                fontWeight: 500
+                        {/* Scrollable Content */}
+                        <div style={{ padding: '25px 30px', overflowY: 'auto', flex: 1 }}>
+                            {/* Sentence Analysis (if hasOriginalText) */}
+                            {analysisResult.hasOriginalText && analysisResult.sentenceAnalysis && (
+                                <div style={{ marginBottom: '25px' }}>
+                                    <h4 style={{ color: '#a5b4fc', margin: '0 0 15px 0', fontSize: '1rem' }}>📖 Sentence Analysis</h4>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        {analysisResult.sentenceAnalysis.map((s: any, idx: number) => (
+                                            <div key={idx} style={{
+                                                background: s.status === 'correct' ? 'rgba(16, 185, 129, 0.1)' :
+                                                    s.status === 'partial' ? 'rgba(251, 191, 36, 0.1)' :
+                                                        s.status === 'skipped' ? 'rgba(239, 68, 68, 0.1)' :
+                                                            'rgba(239, 68, 68, 0.15)',
+                                                border: `1px solid ${s.status === 'correct' ? 'rgba(16, 185, 129, 0.3)' :
+                                                    s.status === 'partial' ? 'rgba(251, 191, 36, 0.3)' :
+                                                        'rgba(239, 68, 68, 0.3)'}`,
+                                                borderRadius: '12px',
+                                                padding: '12px 15px'
                                             }}>
-                                                {word}
-                                            </span>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                                                    <span>{s.status === 'correct' ? '✅' : s.status === 'partial' ? '⚠️' : '❌'}</span>
+                                                    <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.95rem' }}>"{s.original}"</span>
+                                                </div>
+                                                {s.status !== 'correct' && s.spoken && (
+                                                    <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', marginLeft: '28px' }}>
+                                                        → You said: "{s.spoken}"
+                                                    </div>
+                                                )}
+                                                {s.status === 'skipped' && (
+                                                    <div style={{ color: '#fda4af', fontSize: '0.85rem', marginLeft: '28px' }}>
+                                                        → Skipped
+                                                    </div>
+                                                )}
+                                                {s.issues && s.issues.length > 0 && (
+                                                    <div style={{ color: '#fbbf24', fontSize: '0.85rem', marginLeft: '28px', marginTop: '4px' }}>
+                                                        Issues: {s.issues.join(', ')}
+                                                    </div>
+                                                )}
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
                             )}
 
+                            {/* Summary/Feedback Section */}
+                            <div style={{ marginBottom: '20px' }}>
+                                <h4 style={{ color: '#a5b4fc', margin: '0 0 10px 0', fontSize: '1rem' }}>📝 Feedback</h4>
+                                <p style={{ color: 'rgba(255,255,255,0.9)', lineHeight: '1.6', fontSize: '1.05rem', margin: 0 }}>
+                                    {analysisResult.summary || analysisResult.feedback || 'Great effort!'}
+                                </p>
+                            </div>
+
+                            {/* Pronunciation Issues Section */}
+                            {((analysisResult.pronunciation_issues && analysisResult.pronunciation_issues.length > 0) ||
+                                (analysisResult.pronunciationIssues && analysisResult.pronunciationIssues.length > 0)) && (
+                                    <div>
+                                        <h4 style={{ color: '#fda4af', margin: '0 0 10px 0', fontSize: '1rem' }}>🎯 Words to Practice</h4>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                            {(analysisResult.pronunciationIssues || analysisResult.pronunciation_issues || []).map((item: any, idx: number) => (
+                                                <span key={idx} style={{
+                                                    background: 'rgba(251, 113, 133, 0.15)',
+                                                    border: '1px solid rgba(251, 113, 133, 0.3)',
+                                                    color: '#fda4af',
+                                                    padding: '6px 14px',
+                                                    borderRadius: '20px',
+                                                    fontSize: '0.95rem',
+                                                    fontWeight: 500
+                                                }}>
+                                                    {typeof item === 'string' ? item : item.word}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                        </div>
+
+                        {/* Footer */}
+                        <div style={{ padding: '0 30px 25px 30px', flexShrink: 0 }}>
                             <button
                                 onClick={() => setAnalysisResult(null)}
                                 style={{
                                     width: '100%',
-                                    marginTop: '30px',
                                     padding: '14px',
-                                    background: 'var(--bg-secondary)', // Fallback if var not set, will be dark
                                     backgroundColor: '#2d2d38',
                                     color: 'white',
                                     border: '1px solid rgba(255,255,255,0.1)',
