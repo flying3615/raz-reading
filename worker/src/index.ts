@@ -213,10 +213,11 @@ async function analyzeReading(request: Request, env: Env): Promise<Response> {
 
         // 步骤 1: 转写 (Whisper)
         const audioBuffer = await audioFile.arrayBuffer();
-        // Whisper input expects an array of numbers (float32) or standard audio file bytes
-        // Cloudflare AI run interface for whisper handles raw bytes if passed in input
+        // Check audio size
+        console.log(`Audio size: ${audioBuffer.byteLength} bytes`);
+
         const transcription = await env.AI.run('@cf/openai/whisper', {
-            audio: new Uint8Array(audioBuffer),
+            audio: Array.from(new Uint8Array(audioBuffer)),
         });
 
         const transcribedText = transcription.text || '';
