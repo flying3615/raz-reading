@@ -5,7 +5,8 @@ import { type Book, API_BASE } from '../types';
 import booksData from '../data/books.json';
 import { useProgress } from '../contexts/ProgressContext';
 import { useAudioRecorder } from '../hooks/useAudioRecorder';
-import booksContentData from '../data/books-content.json';
+import { getLevelContent } from '../data/loadLevelContent';
+import type { BookContent } from '../data/loadLevelContent';
 
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -73,7 +74,7 @@ function ReaderPage() {
     } | null>(null);
 
     // Practice Content State
-    const [practiceContent, setPracticeContent] = useState<{ quiz: any[], vocabulary: any[], discussion?: any[] } | null>(null);
+    const [practiceContent, setPracticeContent] = useState<BookContent | null>(null);
     // Practice Content State
     // Practice Content State defined above
     // showPractice state removed as we use navigation now
@@ -82,8 +83,7 @@ function ReaderPage() {
     // Load practice content
     useEffect(() => {
         if (level && bookId) {
-            // @ts-ignore
-            const lvlContent = booksContentData[level];
+            const lvlContent = getLevelContent(level);
             if (lvlContent && lvlContent[bookId]) {
                 setPracticeContent(lvlContent[bookId]);
             } else {

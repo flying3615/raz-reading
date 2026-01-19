@@ -1,7 +1,8 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import booksData from '../data/books.json';
-import booksContentData from '../data/books-content.json';
+import { getLevelContent } from '../data/loadLevelContent';
+import type { BookContent } from '../data/loadLevelContent';
 import { useProgress } from '../contexts/ProgressContext';
 
 function PracticePage() {
@@ -9,7 +10,7 @@ function PracticePage() {
     // const navigate = useNavigate();
     const { markPracticed } = useProgress();
 
-    const [practiceContent, setPracticeContent] = useState<{ quiz: any[], vocabulary: any[], discussion?: any[] } | null>(null);
+    const [practiceContent, setPracticeContent] = useState<BookContent | null>(null);
     const [bookTitle, setBookTitle] = useState('');
 
     useEffect(() => {
@@ -21,8 +22,7 @@ function PracticePage() {
             if (book) setBookTitle(book.title);
 
             // Load Content
-            // @ts-ignore
-            const lvlContent = booksContentData[level];
+            const lvlContent = getLevelContent(level);
             if (lvlContent && lvlContent[bookId]) {
                 setPracticeContent(lvlContent[bookId]);
             }
@@ -93,7 +93,7 @@ function PracticePage() {
                         📚 Key Vocabulary
                     </summary>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-                        {practiceContent.vocabulary.map((vocab, idx) => (
+                        {(practiceContent.vocabulary || []).map((vocab, idx) => (
                             <div key={idx} style={{
                                 background: 'rgba(0,0,0,0.2)',
                                 padding: '15px',
@@ -139,7 +139,7 @@ function PracticePage() {
                         📝 Quick Quiz
                     </summary>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        {practiceContent.quiz.map((q, idx) => (
+                        {(practiceContent.quiz || []).map((q, idx) => (
                             <div key={idx} style={{
                                 background: 'rgba(0,0,0,0.2)',
                                 padding: '20px',

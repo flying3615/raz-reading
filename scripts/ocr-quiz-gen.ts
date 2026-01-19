@@ -38,7 +38,12 @@ const openai = new OpenAI({
 
 const RAZ_PATH = path.resolve('/Volumes/SD/raz');
 const PDF_BASE_DIR = path.join(RAZ_PATH, 'RAZ绘本pdf');
-const OUTPUT_FILE = path.join(RAZ_PATH, 'web/src/data/books-content.json');
+const OUTPUT_DIR = path.join(RAZ_PATH, 'web/src/data/levels');
+
+// Get output file path for a specific level
+function getOutputFile(level: string): string {
+    return path.join(OUTPUT_DIR, `level-${level}.json`);
+}
 
 async function main() {
     if (!textOnly && !process.env.DEEPSEEK_API_KEY) {
@@ -57,10 +62,24 @@ async function main() {
     const booksDataPath = path.join(RAZ_PATH, 'web/src/data/books.json');
     const booksData = JSON.parse(fs.readFileSync(booksDataPath, 'utf-8'));
 
-    // 加载已有生成内容
-    let contentData: any = {};
-    if (fs.existsSync(OUTPUT_FILE)) {
-        contentData = JSON.parse(fs.readFileSync(OUTPUT_FILE, 'utf-8'));
+    // Ensure output directory exists
+    if (!fs.existsSync(OUTPUT_DIR)) {
+        fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+    }
+
+    // Helper function to load level content
+    function loadLevelContent(level: string): any {
+        const filePath = getOutputFile(level);
+        if (fs.existsSync(filePath)) {
+            return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        }
+        return {};
+    }
+
+    // Helper function to save level content
+    function saveLevelContent(level: string, data: any): void {
+        const filePath = getOutputFile(level);
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
     }
 
     // 筛选要处理的书籍
@@ -68,10 +87,11 @@ async function main() {
     Object.keys(booksData).forEach(lvl => {
         if (targetLevel && lvl !== targetLevel) return;
 
+        const levelContent = loadLevelContent(lvl);
         booksData[lvl].forEach((book: any) => {
             if (targetBookId && book.id !== targetBookId) return;
             // 如果已经生成过，且包含 fullText 字段 (新版特征)，则跳过
-            const existingEntry = contentData[lvl]?.[book.id];
+            const existingEntry = levelContent[book.id];
             if (existingEntry && existingEntry.fullText && existingEntry.discussion) {
                 // console.log(`Skipping ${book.id} (already generated with fullText)`);
                 return;
@@ -268,13 +288,13 @@ async function main() {
             // Save based on mode
             if (textOnly) {
                 // TextOnly mode: just save/update fullText, preserve existing data
-                if (!contentData[book.level]) contentData[book.level] = {};
-                const existingEntry = contentData[book.level][book.id] || {};
-                contentData[book.level][book.id] = {
+                const levelContent = loadLevelContent(book.level);
+                const existingEntry = levelContent[book.id] || {};
+                levelContent[book.id] = {
                     ...existingEntry, // Preserve quiz, vocab, discussion
                     fullText: fullText, // Overwrite with new fullText
                 };
-                fs.writeFileSync(OUTPUT_FILE, JSON.stringify(contentData, null, 2));
+                saveLevelContent(book.level, levelContent);
                 console.log(`   ✅ Saved fullText for ${book.title} (${fullText.length} chars)`);
             } else {
                 // Full mode: generate AI content
@@ -315,17 +335,17 @@ Return ONLY valid JSON in the following format:
                 if (content) {
                     const json = JSON.parse(content);
 
-                    // Save to map (include fullText for reading analysis)
-                    if (!contentData[book.level]) contentData[book.level] = {};
-                    const existingEntry = contentData[book.level][book.id] || {};
-                    contentData[book.level][book.id] = {
+                    // Save to level-specific file (include fullText for reading analysis)
+                    const levelContent = loadLevelContent(book.level);
+                    const existingEntry = levelContent[book.id] || {};
+                    levelContent[book.id] = {
                         ...existingEntry,
                         ...json,
                         fullText: fullText, // Add the OCR text for comparison
                     };
 
                     // 即时保存
-                    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(contentData, null, 2));
+                    saveLevelContent(book.level, levelContent);
                     console.log(`   ✅ Saved content for ${book.title} (${fullText.length} chars text)`);
                 }
             }

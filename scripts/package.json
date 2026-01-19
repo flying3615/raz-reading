@@ -13,5 +13,9 @@
         "pdf-lib": "^1.17.1",
         "tesseract.js": "^7.0.0",
         "tsx": "^4.7.0"
+    },
+    "devDependencies": {
+        "pdf-parse": "^2.4.5",
+        "pdfjs-dist": "^5.4.530"
     }
 }
