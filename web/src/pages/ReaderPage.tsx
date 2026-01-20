@@ -821,6 +821,7 @@ function ReaderPage() {
                         {/* Progress Bar Container - includes volume & time */}
                         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '4px' }}>
                             <div
+                                ref={progressBarRef}
                                 onClick={handleProgressClick}
                                 style={{
                                     height: '20px',
@@ -829,7 +830,7 @@ function ReaderPage() {
                                     cursor: 'pointer'
                                 }}
                             >
-                                <div ref={progressBarRef} style={{ flex: 1, height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', position: 'relative' }}>
+                                <div style={{ flex: 1, height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', position: 'relative' }}>
                                     <div style={{ width: duration ? `${(currentTime / duration) * 100}%` : '0%', height: '100%', background: '#6366f1', borderRadius: '2px' }} />
                                 </div>
                             </div>
